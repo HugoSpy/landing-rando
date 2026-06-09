@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 // --- CUSTOM INLINE SVG ICONS ---
 function MountainIcon({ className = "w-6 h-6" }: { className?: string }) {
@@ -305,9 +306,10 @@ interface HeroRoute {
   lineName: string;
   lineColor: string;
   glowColor: string;
-  svgLinePath: string;
-  svgHikePath: string;
-  forestArea: { cx: number; cy: number; r: number };
+  trainCoordinates: [number, number][];
+  hikeCoordinates: [number, number][];
+  mapCenter: [number, number];
+  mapZoom: number;
   steps: HeroRouteStep[];
 }
 
@@ -323,9 +325,26 @@ const HERO_ROUTES: Record<"fontainebleau" | "chevreuse", HeroRoute> = {
     lineName: "Transilien Ligne R",
     lineColor: "text-emerald-400 bg-emerald-950/40 border-emerald-500/30",
     glowColor: "#10b981",
-    svgLinePath: "M 100,120 C 180,140 280,210 400,320",
-    svgHikePath: "M 400,320 C 420,300 445,310 450,335 C 455,360 430,380 415,360 C 405,345 395,335 400,320",
-    forestArea: { cx: 420, cy: 340, r: 50 },
+    trainCoordinates: [
+      [2.3731, 48.8443], // Paris Gare de Lyon
+      [2.4410, 48.7250],
+      [2.5200, 48.6350],
+      [2.6350, 48.5400],
+      [2.6601, 48.5332], // Melun
+      [2.7246, 48.4215]  // Fontainebleau-Avon
+    ],
+    hikeCoordinates: [
+      [2.7246, 48.4215], // Avon Station
+      [2.7050, 48.4180],
+      [2.6850, 48.4250],
+      [2.6650, 48.4280],
+      [2.6510, 48.4190],
+      [2.6700, 48.4080],
+      [2.6950, 48.4110],
+      [2.7246, 48.4215]
+    ],
+    mapCenter: [2.54, 48.64],
+    mapZoom: 9.8,
     steps: [
       {
         type: "walk",
@@ -364,9 +383,24 @@ const HERO_ROUTES: Record<"fontainebleau" | "chevreuse", HeroRoute> = {
     lineName: "RER B",
     lineColor: "text-sky-400 bg-sky-950/40 border-sky-500/30",
     glowColor: "#0ea5e9",
-    svgLinePath: "M 80,110 C 85,160 110,230 140,310",
-    svgHikePath: "M 140,310 C 120,330 105,350 120,375 C 135,400 165,390 170,360 C 175,330 155,320 140,310",
-    forestArea: { cx: 140, cy: 350, r: 45 },
+    trainCoordinates: [
+      [2.3470, 48.8619], // Châtelet les Halles
+      [2.3275, 48.8150],
+      [2.3023, 48.7554], // Antony
+      [2.1648, 48.7180],
+      [2.0624, 48.7061]  // Saint-Rémy-lès-Chevreuse
+    ],
+    hikeCoordinates: [
+      [2.0624, 48.7061], // Saint-Rémy
+      [2.0463, 48.7095], // Château de la Madeleine
+      [2.0310, 48.7010],
+      [2.0390, 48.6880],
+      [2.0550, 48.6820],
+      [2.0650, 48.6960],
+      [2.0624, 48.7061]
+    ],
+    mapCenter: [2.20, 48.78],
+    mapZoom: 10.3,
     steps: [
       {
         type: "walk",
@@ -498,6 +532,9 @@ export default function Home() {
   const [selectedDest, setSelectedDest] = useState<'fontainebleau' | 'chevreuse'>('fontainebleau');
   const [loadingStep, setLoadingStep] = useState(0);
 
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+
   const handleSearchSubmit = (destKey?: 'fontainebleau' | 'chevreuse') => {
     let targetDest: 'fontainebleau' | 'chevreuse' = 'fontainebleau';
     
@@ -534,6 +571,124 @@ export default function Home() {
 
     return () => clearInterval(timer);
   }, [heroState]);
+
+  useEffect(() => {
+    if (heroState !== 'map') {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      return;
+    }
+
+    if (!mapContainerRef.current) return;
+
+    const route = HERO_ROUTES[selectedDest];
+
+    // Dynamic import to avoid SSR errors
+    import("maplibre-gl").then((maplibregl) => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+      }
+
+      const map = new maplibregl.Map({
+        container: mapContainerRef.current!,
+        style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+        center: route.mapCenter,
+        zoom: route.mapZoom,
+        attributionControl: false
+      });
+
+      mapRef.current = map;
+
+      map.on("load", () => {
+        // Add train route GeoJSON source and layer
+        map.addSource("train-route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: route.trainCoordinates
+            }
+          }
+        });
+
+        map.addLayer({
+          id: "train-route-layer",
+          type: "line",
+          source: "train-route",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round"
+          },
+          paint: {
+            "line-color": route.glowColor,
+            "line-width": 4,
+            "line-opacity": 0.8
+          }
+        });
+
+        // Add hike route GeoJSON source and layer
+        map.addSource("hike-route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: {
+              type: "LineString",
+              coordinates: route.hikeCoordinates
+            }
+          }
+        });
+
+        map.addLayer({
+          id: "hike-route-layer",
+          type: "line",
+          source: "hike-route",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round"
+          },
+          paint: {
+            "line-color": "#f59e0b", // Orange for hiking
+            "line-width": 3.5,
+            "line-dasharray": [2, 2],
+            "line-opacity": 0.9
+          }
+        });
+
+        // Add Start (Paris) Marker (White circle with dark border)
+        const elStart = document.createElement("div");
+        elStart.className = "w-4 h-4 rounded-full bg-white border-2 border-neutral-900 shadow-md flex items-center justify-center cursor-pointer";
+        elStart.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-neutral-950"></div>`;
+        
+        new maplibregl.Marker({ element: elStart })
+          .setLngLat(route.trainCoordinates[0])
+          .addTo(map);
+
+        // Add Terminus Station Marker (Amber marker with pulsing indicator)
+        const elEnd = document.createElement("div");
+        elEnd.className = "relative flex items-center justify-center cursor-pointer";
+        elEnd.innerHTML = `
+          <div class="absolute w-8 h-8 rounded-full bg-[#f59e0b]/30 animate-ping"></div>
+          <div class="relative w-4 h-4 rounded-full bg-[#f59e0b] border-2 border-white shadow-md"></div>
+        `;
+
+        new maplibregl.Marker({ element: elEnd })
+          .setLngLat(route.trainCoordinates[route.trainCoordinates.length - 1])
+          .addTo(map);
+      });
+    });
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
+  }, [heroState, selectedDest]);
 
   // Interactive slider state: 0 = 30 min, 1 = 1 hour, 2 = 2 hours
   const [sliderVal, setSliderVal] = useState<number>(1);
@@ -587,231 +742,22 @@ export default function Home() {
     setMobileMenuOpen(false);
   };
 
-  const renderSVGMap = (isMini: boolean) => {
-    const route = HERO_ROUTES[selectedDest];
-    const isFontainebleau = selectedDest === 'fontainebleau';
-    
-    return (
-      <svg 
-        width="100%" 
-        height="100%" 
-        viewBox="0 0 500 400" 
-        className={`w-full h-full transition-opacity duration-500 ${isMini ? 'opacity-30' : 'opacity-95'}`}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <pattern id="dot-grid-map" width="24" height="24" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1.2" fill="rgba(255,255,255,0.08)" />
-          </pattern>
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-        
-        {/* Background Grid */}
-        <rect width="100%" height="100%" fill="url(#dot-grid-map)" />
 
-        {/* Nature Areas / Forests */}
-        {/* Fontainebleau Forest (South-East) */}
-        <circle 
-          cx={400} 
-          cy={320} 
-          r={65} 
-          fill="rgba(16,185,129,0.05)" 
-          stroke="rgba(16,185,129,0.18)" 
-          strokeWidth="1" 
-          strokeDasharray="4,4" 
-        />
-        <text 
-          x={400} 
-          y={375} 
-          className="text-[9px] font-bold fill-emerald-500/50 tracking-widest text-center" 
-          textAnchor="middle"
-        >
-          PNR GÂTINAIS
-        </text>
-
-        {/* Chevreuse Forest (South-West) */}
-        <circle 
-          cx={140} 
-          cy={310} 
-          r={55} 
-          fill="rgba(16,185,129,0.05)" 
-          stroke="rgba(16,185,129,0.18)" 
-          strokeWidth="1" 
-          strokeDasharray="4,4" 
-        />
-        <text 
-          x={140} 
-          y={355} 
-          className="text-[9px] font-bold fill-emerald-500/50 tracking-widest text-center" 
-          textAnchor="middle"
-        >
-          PNR CHEVREUSE
-        </text>
-
-        {/* Paris Agglomeration Limit */}
-        <circle 
-          cx={90} 
-          cy={115} 
-          r={40} 
-          fill="rgba(255,255,255,0.02)" 
-          stroke="rgba(255,255,255,0.1)" 
-          strokeWidth="1" 
-          strokeDasharray="3,3" 
-        />
-        <text 
-          x={90} 
-          y={85} 
-          className="text-[8px] font-bold fill-neutral-500 tracking-wider text-center" 
-          textAnchor="middle"
-        >
-          PARIS INTRA-MUROS
-        </text>
-
-        {/* Fictional Landmarks */}
-        <g transform="translate(180, 180)" opacity="0.3">
-          <circle r="2" fill="#fff" />
-          <text y="-6" className="text-[7px] fill-neutral-400" textAnchor="middle">Versailles</text>
-        </g>
-        <g transform="translate(300, 240)" opacity="0.3">
-          <circle r="2" fill="#fff" />
-          <text y="-6" className="text-[7px] fill-neutral-400" textAnchor="middle">Melun</text>
-        </g>
-
-        {/* ---- INACTIVE LINE NETWORK ---- */}
-        {/* Draw Fontainebleau Ligne R lightly if Chevreuse is active */}
-        {!isFontainebleau && (
-          <path 
-            d="M 100,120 C 180,140 280,210 400,320" 
-            fill="none" 
-            stroke="rgba(255,255,255,0.05)" 
-            strokeWidth="2" 
-            strokeLinecap="round"
-          />
-        )}
-        {/* Draw Chevreuse RER B lightly if Fontainebleau is active */}
-        {isFontainebleau && (
-          <path 
-            d="M 80,110 C 85,160 110,230 140,310" 
-            fill="none" 
-            stroke="rgba(255,255,255,0.05)" 
-            strokeWidth="2" 
-            strokeLinecap="round"
-          />
-        )}
-
-        {/* ---- ACTIVE LINE NETWORK ---- */}
-        {/* Underlay glow */}
-        <path 
-          d={route.svgLinePath} 
-          fill="none" 
-          stroke={route.glowColor} 
-          strokeWidth="8" 
-          opacity="0.12" 
-          strokeLinecap="round"
-          filter="url(#glow)"
-        />
-        
-        {/* Dashed rail path */}
-        <path 
-          d={route.svgLinePath} 
-          fill="none" 
-          stroke={route.glowColor} 
-          strokeWidth="2.5" 
-          strokeLinecap="round"
-          strokeDasharray="6,4"
-          className="animate-path-flow"
-        />
-
-        {/* ---- HIKING LOOP PATH ---- */}
-        {/* Underlay glow */}
-        <path 
-          d={route.svgHikePath} 
-          fill="none" 
-          stroke="#f59e0b" 
-          strokeWidth="4" 
-          opacity="0.15" 
-          strokeLinecap="round"
-        />
-        {/* Dotted path */}
-        <path 
-          d={route.svgHikePath} 
-          fill="none" 
-          stroke="#f59e0b" 
-          strokeWidth="1.5" 
-          strokeLinecap="round"
-          strokeDasharray="3,3"
-        />
-
-        {/* ---- PINS & LABELS ---- */}
-        {/* Paris Station */}
-        <g transform={`translate(${isFontainebleau ? 100 : 80}, ${isFontainebleau ? 120 : 110})`}>
-          <circle r="4" fill="#fff" stroke="#171717" strokeWidth="1.5" className="shadow-md" />
-          <text y="-10" className="text-[9px] font-bold fill-neutral-200 tracking-wide" textAnchor="middle">
-            {isFontainebleau ? 'Paris Gare de Lyon' : 'Paris Châtelet'}
-          </text>
-        </g>
-
-        {/* Destination Station Terminus */}
-        <g transform={`translate(${isFontainebleau ? 400 : 140}, ${isFontainebleau ? 320 : 310})`}>
-          <circle r="10" fill={route.glowColor} opacity="0.2" className="animate-ping" />
-          <circle r="5" fill="#f59e0b" stroke="#171717" strokeWidth="1.5" className="shadow-md" />
-          <text y="-10" className="text-[9px] font-bold fill-neutral-200 tracking-wide" textAnchor="middle">
-            {isFontainebleau ? 'Gare de Fontainebleau' : 'Saint-Rémy-lès-Chevreuse'}
-          </text>
-        </g>
-
-        {/* Hike Route Point Indicator */}
-        <g transform={`translate(${isFontainebleau ? 440 : 130}, ${isFontainebleau ? 350 : 360})`}>
-          <circle r="3" fill="#f59e0b" />
-          <text x="6" y="3" className="text-[8px] font-semibold fill-amber-400/80 tracking-wide">
-            Début Sentier
-          </text>
-        </g>
-
-        {/* ---- ANIMATED TRAIN ---- */}
-        <g style={{
-          offsetPath: `path('${route.svgLinePath}')`,
-          animation: 'moveTrain 6s linear infinite'
-        }}>
-          <circle r="10" fill={route.glowColor} className="animate-ping" opacity="0.3" />
-          <circle r="5" fill={route.glowColor} stroke="#fff" strokeWidth="1.5" />
-        </g>
-        
-        <style>{`
-          @keyframes moveTrain {
-            0% { offset-distance: 0%; }
-            100% { offset-distance: 100%; }
-          }
-          @keyframes drawPath {
-            from { stroke-dashoffset: 100; }
-            to { stroke-dashoffset: 0; }
-          }
-          .animate-path-flow {
-            stroke-dasharray: 8, 6;
-            animation: drawPath 12s linear infinite;
-          }
-        `}</style>
-      </svg>
-    );
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50 font-sans text-neutral-900 selection:bg-primary-900 selection:text-white">
       {/* 1. HEADER / NAVIGATION */}
       <div className="sticky top-0 z-50 w-full pointer-events-none">
         <div className="max-w-7xl mx-auto px-6 pt-4">
-          <header className="pointer-events-auto w-full bg-neutral-950/55 backdrop-blur-md border border-white/10 rounded-full shadow-lg transition-all duration-300">
+          <header className="pointer-events-auto w-full bg-white/60 backdrop-blur-md border border-white/40 rounded-full shadow-lg transition-all duration-300">
             <div className="px-6 md:px-8 h-16 flex items-center justify-between">
               {/* Logo Brand */}
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer"
+                className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 cursor-pointer"
               >
-                <CustomMountainLogo className="w-7 h-7 text-white group-hover:scale-105 transition-transform duration-200" />
-                <span className="font-black text-xl tracking-widest text-white uppercase">Névé</span>
+                <CustomMountainLogo className="w-7 h-7 text-neutral-900 group-hover:scale-105 transition-transform duration-200" />
+                <span className="font-black text-xl tracking-widest text-neutral-900 uppercase">Névé</span>
               </button>
 
               {/* Desktop Menu */}
@@ -819,25 +765,25 @@ export default function Home() {
 
                 <button
                   onClick={() => scrollToId("tours")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
                 >
                   Itinéraires
                 </button>
                 <button
                   onClick={() => scrollToId("destinations")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
                 >
                   Explorer
                 </button>
                 <button
                   onClick={() => scrollToId("safety")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
                 >
                   Garanties
                 </button>
                 <button
                   onClick={() => scrollToId("instagram")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
                 >
                   Communauté
                 </button>
@@ -847,7 +793,7 @@ export default function Home() {
               <div className="hidden md:flex items-center gap-4">
                 <button
                   onClick={() => scrollToId("footer-cta")}
-                  className="px-5 py-2 bg-white hover:bg-neutral-200 text-neutral-950 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm cursor-pointer"
+                  className="px-5 py-2 bg-neutral-950 hover:bg-neutral-800 text-white text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm cursor-pointer"
                 >
                   Lancer l'app
                 </button>
@@ -856,7 +802,7 @@ export default function Home() {
               {/* Mobile Menu Trigger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-white focus:outline-none cursor-pointer"
+                className="md:hidden p-2 text-neutral-900 focus:outline-none cursor-pointer"
                 aria-label="Menu"
               >
                 {mobileMenuOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
@@ -865,33 +811,33 @@ export default function Home() {
 
             {/* Mobile Menu Panel */}
             {mobileMenuOpen && (
-              <div className="pointer-events-auto md:hidden absolute top-20 left-6 right-6 bg-neutral-950/95 backdrop-blur-xl border border-white/10 px-6 py-8 flex flex-col gap-6 animate-fade-in shadow-2xl rounded-[24px] text-white">
+              <div className="pointer-events-auto md:hidden absolute top-20 left-6 right-6 bg-white/95 backdrop-blur-xl border border-neutral-200/60 px-6 py-8 flex flex-col gap-6 animate-fade-in shadow-2xl rounded-[24px] text-neutral-900">
 
                 <button
                   onClick={() => scrollToId("tours")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-300 hover:text-white"
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
                 >
                   Itinéraires
                 </button>
                 <button
                   onClick={() => scrollToId("destinations")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-300 hover:text-white"
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
                 >
                   Explorer
                 </button>
                 <button
                   onClick={() => scrollToId("safety")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-300 hover:text-white"
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
                 >
                   Garanties
                 </button>
                 <button
                   onClick={() => scrollToId("instagram")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-300 hover:text-white"
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
                 >
                   Communauté
                 </button>
-                <hr className="border-white/10" />
+                <hr className="border-neutral-200/60" />
                 <button
                   onClick={() => scrollToId("footer-cta")}
                   className="w-full text-center py-4 bg-primary-900 hover:bg-primary-950 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300"
@@ -905,313 +851,267 @@ export default function Home() {
       </div>
 
       {/* 2. HERO SECTION */}
-      <section className={`relative overflow-hidden transition-colors duration-1000 ${heroState === 'map' ? 'bg-[#0a0a0a]' : 'bg-neutral-50'} min-h-screen lg:min-h-[92vh] flex items-center -mt-20 pt-32 pb-24 md:py-32`}>
-        {/* Background image covering full height (Only visible in search & loading states, faded out/blurred in map state) */}
-        <div className={`absolute inset-0 z-0 transition-all duration-1000 ${heroState === 'map' ? 'opacity-10 scale-105 blur-sm' : 'opacity-100 scale-100'}`}>
+      <section className={`relative overflow-hidden transition-all duration-1000 ${heroState === 'map' ? 'bg-[#f4f3f0] h-screen' : 'bg-neutral-50 min-h-screen'} flex items-center -mt-20 ${heroState === 'map' ? 'pt-20 pb-0' : 'pt-48 pb-24 md:pt-56 md:pb-32'}`}>
+        {/* Background image covering full height (Only visible in search & loading states, hidden in map state) */}
+        <div className={`absolute inset-0 z-0 transition-all duration-1000 ${heroState === 'map' ? 'opacity-0 pointer-events-none scale-105 blur-sm' : 'opacity-100 scale-100'}`}>
           <Image 
-            src="/neve_hero_right.png" 
-            alt="Randonneuse sur un sentier en montagne" 
+            src="/neve_hero_bg_misty.jpg" 
+            alt="Route de montagne sinueuse et sapins dans la brume" 
             fill 
             priority
-            className="object-cover object-[65%_center]"
+            className="object-cover object-center"
             sizes="100vw"
           />
           {/* Light gradient overlay to make text highly legible on the light sky background while maintaining a light aesthetic */}
-          <div className="absolute inset-0 bg-gradient-to-r from-neutral-50/85 via-neutral-50/35 to-transparent z-1"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-neutral-50 z-1"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-neutral-950/15 to-neutral-50 z-1"></div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 w-full relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
-            
-            {/* Left Column: Wording & CTA or Trajectory Details */}
-            <div className={`transition-all duration-700 ${heroState === 'map' ? 'lg:col-span-4' : 'lg:col-span-7'} flex flex-col justify-center text-left`}>
-              
-              {heroState !== 'map' ? (
-                <div className="animate-fade-in space-y-8">
-                  {/* Top Tagline */}
-                  <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-primary-50/90 backdrop-blur-md text-primary-900 text-[10px] font-bold tracking-widest uppercase rounded-full border border-primary-200/50 w-fit">
-                    <SparklesIcon className="w-3.5 h-3.5 text-primary-600" />
-                    Micro-aventure ferroviaire
-                  </div>
-
-                  {/* Main Slogan */}
-                  <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[52px] xl:text-[60px] font-black tracking-tight text-neutral-950 leading-[1.05] uppercase">
-                    Quittez Paris <br />
-                    sur un coup de tête. <br />
-                    <span className="text-primary-600">Rentrez pour le dîner.</span> <br />
-                    Sans stress.
-                  </h1>
-
-                  {/* Reassuring Subtitle */}
-                  <p className="text-sm sm:text-base text-neutral-700 font-light leading-relaxed max-w-lg">
-                    Névé planifie votre rando en fonction du prochain train. Zéro voiture, zéro calcul, 100% d'évasion en direct sur votre écran.
-                  </p>
-
-                  {/* Conditional Search / Loading Card */}
-                  {heroState === 'search' ? (
-                    <div className="relative w-full max-w-[420px] bg-neutral-950/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-2xl flex flex-col gap-5 text-white animate-scale-up">
-                      {/* Search Bar Input */}
-                      <form 
-                        onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(); }}
-                        className="relative flex items-center bg-neutral-900 border border-white/5 rounded-full px-4.5 py-3.5 shadow-inner"
-                      >
-                        <svg className="w-4 h-4 text-neutral-400 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input 
-                          type="text" 
-                          placeholder="Où voulez-vous randonner ?" 
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="text-xs text-white placeholder-neutral-500 font-medium flex-1 bg-transparent border-none outline-none focus:ring-0 p-0"
-                        />
-                        <button 
-                          type="submit"
-                          className="w-7 h-7 rounded-full bg-primary-400 hover:bg-primary-500 flex items-center justify-center text-neutral-950 font-bold text-sm cursor-pointer transition-colors"
-                          aria-label="Rechercher"
-                        >
-                          <ArrowRightIcon className="w-3.5 h-3.5" />
-                        </button>
-                      </form>
-
-                      {/* Suggestions Header */}
-                      <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-neutral-400">
-                        <span>Recherches fréquentes</span>
-                        <span className="text-primary-400 hover:underline cursor-pointer" onClick={() => handleSearchSubmit()}>Voir tout</span>
-                      </div>
-
-                      {/* Suggestions List */}
-                      <div className="space-y-3">
-                        {/* Option 1: Fontainebleau */}
-                        <div 
-                          onClick={() => handleSearchSubmit('fontainebleau')}
-                          className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/12 transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.99]"
-                        >
-                          <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-                            <Image src="/journey_mountain.png" alt="Fontainebleau" fill className="object-cover" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-white truncate">Forêt de Fontainebleau</h4>
-                            <p className="text-[10px] text-neutral-400 mt-1 truncate">38 min de train (Gare de Lyon) • 14.2 km</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-[10px] font-bold text-primary-400 flex items-center gap-0.5 justify-end">
-                              <span>★</span>
-                              <span>4.9</span>
-                            </div>
-                            <span className="inline-block mt-1 text-[8px] bg-white/10 text-white font-bold uppercase px-1.5 py-0.5 rounded">Navigo</span>
-                          </div>
-                        </div>
-
-                        {/* Option 2: Chevreuse */}
-                        <div 
-                          onClick={() => handleSearchSubmit('chevreuse')}
-                          className="flex items-center gap-3.5 p-3 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/12 transition-all duration-200 cursor-pointer shadow-sm active:scale-[0.99]"
-                        >
-                          <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
-                            <Image src="/journey_river.png" alt="Vallée de la Chevreuse" fill className="object-cover" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs font-bold text-white truncate">Vallée de la Chevreuse</h4>
-                            <p className="text-[10px] text-neutral-400 mt-1 truncate">45 min de RER (Gare du Nord) • 15.8 km</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-[10px] font-bold text-primary-400 flex items-center gap-0.5 justify-end">
-                              <span>★</span>
-                              <span>4.8</span>
-                            </div>
-                            <span className="inline-block mt-1 text-[8px] bg-white/10 text-white font-bold uppercase px-1.5 py-0.5 rounded">Navigo</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    // Loading State
-                    <div className="relative w-full max-w-[420px] bg-neutral-950/90 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-2xl flex flex-col gap-6 text-white mt-8 items-center justify-center py-12 animate-scale-up">
-                      <div className="w-12 h-12 rounded-full border-4 border-neutral-800 border-t-primary-400 animate-spin"></div>
-                      <div className="text-center space-y-2">
-                        <p className="text-xs font-bold uppercase tracking-widest text-primary-400">Recherche d'itinéraire...</p>
-                        <p className="text-sm font-semibold text-white transition-all duration-300">
-                          {loadingStep === 0 && "Calcul de l'itinéraire optimal sans voiture..."}
-                          {loadingStep === 1 && "Vérification des prochains départs SNCF..."}
-                          {loadingStep === 2 && "Génération de la trace de randonnée..."}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Social Proof */}
-                  <div className="pt-8 border-t border-neutral-200/50 flex flex-col sm:flex-row items-start sm:items-center gap-4 max-w-lg">
-                    <div className="flex -space-x-3">
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
-                        <Image src="/journey_mountain.png" alt="Utilisateur Névé" fill className="object-cover" />
-                      </div>
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
-                        <Image src="/journey_river.png" alt="Utilisateur Névé" fill className="object-cover" />
-                      </div>
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
-                        <Image src="/tent_forest.png" alt="Utilisateur Névé" fill className="object-cover" />
-                      </div>
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
-                        <Image src="/forest_green.png" alt="Utilisateur Névé" fill className="object-cover" />
-                      </div>
-                      <div className="w-8 h-8 rounded-full bg-neutral-100 border-2 border-white flex items-center justify-center text-[9px] font-bold text-neutral-600">
-                        +
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold tracking-wide text-neutral-900">
-                        Déjà +500 samedis sauvés de la routine parisienne.
-                      </p>
-                      <p className="text-[10px] text-neutral-500 mt-0.5">
-                        Aucun retard de train manqué grâce aux alertes en direct.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                // Map Trajectory Details Card (Liquid Glass / Frosted Effect)
-                <div className="animate-scale-up relative w-full bg-neutral-950/65 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-2xl flex flex-col gap-5 text-white">
-                  
-                  {/* Close / Back button */}
-                  <button 
-                    onClick={() => setHeroState('search')}
-                    className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-400 hover:text-white transition-colors cursor-pointer w-fit"
-                  >
-                    <ArrowLeftIcon className="w-3.5 h-3.5" />
-                    <span>Nouvelle recherche</span>
-                  </button>
-
-                  {/* Header info */}
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>Trajet optimal trouvé</span>
-                      </span>
-                      <h2 className="text-xl font-black uppercase tracking-tight text-white leading-tight">
-                        {HERO_ROUTES[selectedDest].name}
-                      </h2>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-bold text-amber-400 flex items-center gap-0.5 justify-end">
-                        <span>★</span>
-                        <span>{HERO_ROUTES[selectedDest].rating}</span>
-                      </div>
-                      <span className="text-[9px] text-neutral-400 block mt-0.5">Note Rando</span>
-                    </div>
-                  </div>
-
-                  {/* Journey Metrics */}
-                  <div className="grid grid-cols-3 gap-2 py-3 border-y border-white/10 text-center">
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-neutral-400 tracking-wider">Transport</p>
-                      <p className="text-xs font-bold text-white mt-0.5">{HERO_ROUTES[selectedDest].trainTime}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-neutral-400 tracking-wider">Randonnée</p>
-                      <p className="text-xs font-bold text-white mt-0.5">{HERO_ROUTES[selectedDest].distance}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] uppercase font-bold text-neutral-400 tracking-wider">Tarif</p>
-                      <p className="text-xs font-bold text-emerald-400 mt-0.5">Navigo</p>
-                    </div>
-                  </div>
-
-                  {/* Itinerary Timeline */}
-                  <div className="space-y-4 my-2 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
-                    {HERO_ROUTES[selectedDest].steps.map((step, idx) => (
-                      <div key={idx} className="flex gap-3 text-left">
-                        {/* Timeline Connector Line and Bullet */}
-                        <div className="flex flex-col items-center">
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                            step.type === 'walk' ? 'bg-neutral-800 text-neutral-400' :
-                            step.type === 'train' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-500/20' :
-                            step.type === 'hike' ? 'bg-amber-950/80 text-amber-400 border border-amber-500/20' :
-                            'bg-primary-950/80 text-primary-400 border border-primary-500/20'
-                          }`}>
-                            {step.type === 'walk' && "🚶"}
-                            {step.type === 'train' && "🚇"}
-                            {step.type === 'hike' && "🥾"}
-                            {step.type === 'return' && "🔄"}
-                          </div>
-                          {idx < HERO_ROUTES[selectedDest].steps.length - 1 && (
-                            <div className="w-0.5 h-10 bg-white/10 my-1"></div>
-                          )}
-                        </div>
-                        {/* Step content */}
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <div className="flex justify-between items-start gap-1">
-                            <h4 className="text-xs font-bold text-white leading-snug">{step.desc}</h4>
-                            <span className="text-[9px] font-bold text-neutral-400 flex-shrink-0 bg-white/5 px-1.5 py-0.5 rounded">
-                              {step.duration}
-                            </span>
-                          </div>
-                          {step.detail && (
-                            <p className="text-[10px] text-neutral-400 mt-1 leading-relaxed font-light">{step.detail}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Importer CTA */}
-                  <button 
-                    onClick={() => scrollToId("footer-cta")}
-                    className="w-full py-3 bg-primary-900 hover:bg-primary-950 text-white text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-lg shadow-primary-950/30 text-center cursor-pointer mt-2"
-                  >
-                    Importer la trace GPX
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Right Column: Smartphone Mockup or SVG Map View */}
-            <div className={`transition-all duration-700 ${heroState === 'map' ? 'lg:col-span-8 w-full' : 'lg:col-span-5'} flex justify-center items-center mt-8 lg:mt-0`}>
-              {heroState !== 'map' ? (
-                // Smartphone Mockup showing a miniature preview of the map
-                <div className="relative w-full max-w-[320px] h-[550px] bg-neutral-950 rounded-[44px] border-[10px] border-neutral-900 shadow-2xl overflow-hidden flex flex-col items-center justify-center p-1.5 select-none animate-scale-up z-10">
-                  {/* Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-5 bg-neutral-900 rounded-b-xl z-20"></div>
-                  
-                  {/* Miniature SVG Map in background */}
-                  <div className="absolute inset-0 z-0 bg-neutral-950 opacity-40">
-                    {renderSVGMap(true)}
-                  </div>
-                  
-                  {/* Phone UI Overlay */}
-                  <div className="relative z-10 w-full h-full flex flex-col justify-between py-8 px-5 text-white text-center">
-                    <div className="space-y-3 mt-6">
-                      <div className="w-12 h-12 rounded-2xl bg-primary-950/60 border border-primary-500/20 flex items-center justify-center text-primary-400 mx-auto">
-                        <CustomMountainLogo className="w-8 h-8 text-primary-400" />
-                      </div>
-                      <h3 className="font-black text-sm uppercase tracking-widest text-white mt-2">Névé App</h3>
-                      <p className="text-[10px] text-neutral-400 max-w-[190px] mx-auto leading-relaxed font-light">
-                        Planificateur de micro-aventures sans voiture au départ de Paris.
-                      </p>
-                    </div>
-                    
-                    <div className="bg-neutral-900/80 border border-white/10 rounded-2xl p-4 backdrop-blur-md text-left mx-1 shadow-lg">
-                      <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-400 mb-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>DÉMO INTERACTIVE</span>
-                      </div>
-                      <p className="text-[10px] text-neutral-300 leading-normal font-light">
-                        Cliquez sur une destination à gauche pour lancer le calcul d'itinéraire en direct sur la carte.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                // Large Immersive Interactive Vector SVG Map
-                <div className="relative w-full bg-neutral-950/65 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-2xl h-[420px] sm:h-[480px] lg:h-[550px] overflow-hidden flex items-center justify-center select-none animate-scale-up">
-                  {renderSVGMap(false)}
-                </div>
-              )}
-            </div>
-
+        {/* Full-bleed Map View in background during map state */}
+        {heroState === 'map' && (
+          <div className="absolute inset-0 z-0 bg-[#f4f3f0] w-full h-full animate-fade-in">
+            <div ref={mapContainerRef} className="w-full h-full" />
           </div>
+        )}
+
+        <div className="max-w-7xl mx-auto px-6 w-full relative z-10 flex flex-col items-center">
+          
+          {heroState === 'search' || heroState === 'loading' ? (
+            <>
+              {/* Heading */}
+              <h1 className="text-[32px] sm:text-[48px] md:text-[52px] font-black text-white uppercase tracking-tight leading-[36px] sm:leading-[52px] md:leading-[52px] drop-shadow-sm text-center">
+                Quittez Paris sur un coup de tête. <br />
+                <span className="text-[#508235] block my-2">Rentrez pour le dîner.</span>
+                <span>Sans stress.</span>
+              </h1>
+
+              {heroState === 'search' ? (
+                // Centered White Frosted Glass Search Card
+                <div className="relative w-full max-w-[680px] mx-auto bg-white/60 backdrop-blur-md border border-white/40 shadow-xl rounded-[32px] p-6 text-neutral-900 text-left mt-10 animate-scale-up">
+                  {/* Search Bar Input (White pill with green button) */}
+                  <form 
+                    onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(); }}
+                    className="relative flex items-center bg-white border border-neutral-200/60 rounded-full px-5 py-3.5 shadow-sm focus-within:border-primary-500/50 transition-colors"
+                  >
+                    <svg className="w-4.5 h-4.5 text-neutral-400 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input 
+                      type="text" 
+                      placeholder="Où voulez-vous randonner ?" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="text-sm text-neutral-800 placeholder-neutral-400 font-medium flex-1 bg-transparent border-none outline-none focus:ring-0 p-0"
+                    />
+                    <button 
+                      type="submit"
+                      className="w-8 h-8 rounded-full bg-[#508235] hover:bg-[#446e2d] flex items-center justify-center text-white font-bold text-sm cursor-pointer transition-colors shadow-sm ml-2"
+                      aria-label="Rechercher"
+                    >
+                      <ArrowRightIcon className="w-4 h-4" />
+                    </button>
+                  </form>
+
+                  {/* Suggestions Header */}
+                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-neutral-500 mt-6 mb-3 px-1">
+                    <span>Recherches fréquentes</span>
+                    <span className="text-[#508235] hover:underline cursor-pointer" onClick={() => handleSearchSubmit()}>Voir tout</span>
+                  </div>
+
+                  {/* Suggestions List */}
+                  <div className="space-y-3">
+                    {/* Fontainebleau */}
+                    <div 
+                      onClick={() => handleSearchSubmit('fontainebleau')}
+                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-neutral-100/80 hover:border-primary-500/30 hover:shadow-md transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.995]"
+                    >
+                      <div className="flex items-center min-w-0">
+                        <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200/50">
+                          <Image src="/journey_mountain.png" alt="Fontainebleau" fill className="object-cover" />
+                        </div>
+                        <div className="ml-4 text-left">
+                          <h4 className="text-xs font-bold text-neutral-900">Forêt de Fontainebleau</h4>
+                          <p className="text-[10px] text-neutral-500 mt-1">38 min de train (Gare de Lyon) • 14.2 km</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-bold text-[#508235] flex items-center gap-0.5 justify-end">
+                          <span>★</span>
+                          <span>4.9</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Chevreuse */}
+                    <div 
+                      onClick={() => handleSearchSubmit('chevreuse')}
+                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-neutral-100/80 hover:border-primary-500/30 hover:shadow-md transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.995]"
+                    >
+                      <div className="flex items-center min-w-0">
+                        <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200/50">
+                          <Image src="/journey_river.png" alt="Vallée de la Chevreuse" fill className="object-cover" />
+                        </div>
+                        <div className="ml-4 text-left">
+                          <h4 className="text-xs font-bold text-neutral-900">Vallée de la Chevreuse</h4>
+                          <p className="text-[10px] text-neutral-500 mt-1">45 min de RER (Gare du Nord) • 15.8 km</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs font-bold text-[#508235] flex items-center gap-0.5 justify-end">
+                          <span>★</span>
+                          <span>4.8</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Centered Light Frosted Glass Loading Card
+                <div className="relative w-full max-w-[680px] mx-auto bg-white/60 backdrop-blur-md border border-white/40 shadow-xl rounded-[32px] p-6 text-neutral-900 text-center mt-10 items-center justify-center py-16 animate-scale-up">
+                  <div className="w-12 h-12 rounded-full border-4 border-neutral-200 border-t-[#508235] animate-spin mx-auto"></div>
+                  <div className="text-center space-y-3 mt-6">
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#508235]">Recherche d'itinéraire...</p>
+                    <p className="text-sm font-semibold text-neutral-800 transition-all duration-300">
+                      {loadingStep === 0 && "Calcul de l'itinéraire optimal sans voiture..."}
+                      {loadingStep === 1 && "Vérification des prochains départs SNCF..."}
+                      {loadingStep === 2 && "Génération de la trace de randonnée..."}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Subheadline (Centered, white for visibility) */}
+              <p className="text-white text-sm sm:text-base text-center font-light tracking-wide max-w-2xl mx-auto mt-10 leading-relaxed drop-shadow-md">
+                Névé planifie votre rando en fonction du prochain train. <br />
+                Zéro voiture, zéro calcul, 100% d'évasion en direct sur votre écran.
+              </p>
+
+              {/* Social Proof (Centered, white for visibility) */}
+              <div className="pt-8 mt-6 border-t border-white/10 flex flex-col sm:flex-row items-center gap-4 justify-center w-full max-w-md mx-auto">
+                <div className="flex -space-x-3">
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
+                    <Image src="/journey_mountain.png" alt="Utilisateur Névé" fill className="object-cover" />
+                  </div>
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
+                    <Image src="/journey_river.png" alt="Utilisateur Névé" fill className="object-cover" />
+                  </div>
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
+                    <Image src="/tent_forest.png" alt="Utilisateur Névé" fill className="object-cover" />
+                  </div>
+                  <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-white">
+                    <Image src="/forest_green.png" alt="Utilisateur Névé" fill className="object-cover" />
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center text-[9px] font-bold text-white">
+                    +
+                  </div>
+                </div>
+                <div className="text-center sm:text-left text-white drop-shadow-sm">
+                  <p className="text-xs font-semibold tracking-wide">
+                    Déjà +500 samedis sauvés de la routine parisienne.
+                  </p>
+                  <p className="text-[10px] text-neutral-300 mt-0.5">
+                    Aucun retard de train manqué grâce aux alertes en direct.
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            // Full-bleed map state: Floating Liquid Glass details panel on the left (hiding central slogan)
+            <div className="absolute left-4 right-4 bottom-4 lg:left-12 lg:top-12 lg:bottom-12 lg:right-auto z-20 w-auto lg:w-[380px] flex flex-col justify-center animate-scale-up">
+              <div className="relative w-full bg-white/60 backdrop-blur-md border border-white/40 rounded-[32px] p-6 shadow-2xl flex flex-col gap-5 text-neutral-900">
+                
+                {/* Close / Back button */}
+                <button 
+                  onClick={() => setHeroState('search')}
+                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-neutral-900 transition-colors cursor-pointer w-fit"
+                >
+                  <ArrowLeftIcon className="w-3.5 h-3.5" />
+                  <span>Nouvelle recherche</span>
+                </button>
+
+                {/* Header info */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-[#508235]/10 text-[#508235] border border-[#508235]/20 mb-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#508235] animate-pulse"></span>
+                      <span>Trajet optimal trouvé</span>
+                    </span>
+                    <h2 className="text-xl font-black uppercase tracking-tight text-neutral-900 leading-tight">
+                      {HERO_ROUTES[selectedDest].name}
+                    </h2>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-bold text-[#f59e0b] flex items-center gap-0.5 justify-end">
+                      <span>★</span>
+                      <span>{HERO_ROUTES[selectedDest].rating}</span>
+                    </div>
+                    <span className="text-[9px] text-neutral-500 block mt-0.5">Note Rando</span>
+                  </div>
+                </div>
+
+                {/* Journey Metrics */}
+                <div className="grid grid-cols-3 gap-2 py-3 border-y border-neutral-200/80 text-center">
+                  <div>
+                    <p className="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Transport</p>
+                    <p className="text-xs font-bold text-neutral-900 mt-0.5">{HERO_ROUTES[selectedDest].trainTime}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Randonnée</p>
+                    <p className="text-xs font-bold text-neutral-900 mt-0.5">{HERO_ROUTES[selectedDest].distance}</p>
+                  </div>
+                  <div>
+                    <p className="text-[9px] uppercase font-bold text-[#508235] mt-0.5">Tarif</p>
+                    <p className="text-xs font-bold text-[#508235] mt-0.5">Navigo</p>
+                  </div>
+                </div>
+
+                {/* Itinerary Timeline */}
+                <div className="space-y-4 my-2 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-neutral-300">
+                  {HERO_ROUTES[selectedDest].steps.map((step, idx) => (
+                    <div key={idx} className="flex gap-3 text-left">
+                      {/* Timeline Connector Line and Bullet */}
+                      <div className="flex flex-col items-center">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          step.type === 'walk' ? 'bg-neutral-100 text-neutral-500 border border-neutral-200' :
+                          step.type === 'train' ? 'bg-emerald-50 text-[#508235] border border-emerald-100' :
+                          step.type === 'hike' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                          'bg-primary-50 text-[#508235] border border-primary-100'
+                        }`}>
+                          {step.type === 'walk' && "🚶"}
+                          {step.type === 'train' && "🚇"}
+                          {step.type === 'hike' && "🥾"}
+                          {step.type === 'return' && "🔄"}
+                        </div>
+                        {idx < HERO_ROUTES[selectedDest].steps.length - 1 && (
+                          <div className="w-0.5 h-10 bg-neutral-200 my-1"></div>
+                        )}
+                      </div>
+                      {/* Step content */}
+                      <div className="flex-1 min-w-0 pt-0.5">
+                        <div className="flex justify-between items-start gap-1">
+                          <h4 className="text-xs font-bold text-neutral-900 leading-snug">{step.desc}</h4>
+                          <span className="text-[9px] font-bold text-neutral-500 flex-shrink-0 bg-neutral-100 px-1.5 py-0.5 rounded">
+                            {step.duration}
+                          </span>
+                        </div>
+                        {step.detail && (
+                          <p className="text-[10px] text-neutral-500 mt-1 leading-relaxed font-light">{step.detail}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Importer CTA */}
+                <button 
+                  onClick={() => scrollToId("footer-cta")}
+                  className="w-full py-3 bg-[#508235] hover:bg-[#446e2d] text-white text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-lg shadow-primary-950/30 text-center cursor-pointer mt-2"
+                >
+                  Importer la trace GPX
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
       </section>
 
