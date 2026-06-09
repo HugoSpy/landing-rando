@@ -271,22 +271,7 @@ function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-// --- DESTINATIONS DATA FOR INTERACTIVE SLIDER ---
-interface Destination {
-  id: string;
-  name: string;
-  station: string;
-  duration: string;
-  line: string;
-  weather: string;
-  weatherIcon: string;
-  pricing: string;
-  isNavigo: boolean;
-  distance: string;
-  elevation: string;
-  description: string;
-  highlight: string;
-}
+
 
 interface HeroRouteStep {
   type: "walk" | "train" | "hike" | "return";
@@ -430,53 +415,6 @@ const HERO_ROUTES: Record<"fontainebleau" | "chevreuse", HeroRoute> = {
   }
 };
 
-const DESTINATIONS: Destination[] = [
-  {
-    id: "meudon",
-    name: "Forêt de Meudon",
-    station: "Gare de Bellevue",
-    duration: "14 min de train (Montparnasse)",
-    line: "Transilien Ligne N",
-    weather: "Beau temps frais",
-    weatherIcon: "⛅",
-    pricing: "Inclus dans le pass Navigo",
-    isNavigo: true,
-    distance: "9.5 km",
-    elevation: "+180m",
-    description: "Une évasion immédiate aux portes de Paris. Parcourez les sentiers forestiers autour des étangs de Meudon sans perdre de temps dans les transports.",
-    highlight: "Idéal pour une envie de vert soudaine en matinée.",
-  },
-  {
-    id: "fontainebleau",
-    name: "Forêt de Fontainebleau",
-    station: "Gare de Fontainebleau-Avon",
-    duration: "38 min de train (Gare de Lyon)",
-    line: "Transilien Ligne R",
-    weather: "Grand Soleil",
-    weatherIcon: "☀️",
-    pricing: "Inclus dans le pass Navigo",
-    isNavigo: true,
-    distance: "14.2 km",
-    elevation: "+260m",
-    description: "Le paradis des rochers de grès et des pins sylvestres. Un tracé sinueux et spectaculaire qui vous fera oublier l'Île-de-France en moins de 40 minutes.",
-    highlight: "Notre recommandation pour ce samedi.",
-  },
-  {
-    id: "franchise",
-    name: "Gorges de la Franchise",
-    station: "Gare de Sens",
-    duration: "1h15 de train (Gare de Lyon)",
-    line: "TER Bourgogne",
-    weather: "Ciel Voilé / Doux",
-    weatherIcon: "🌤️",
-    pricing: "Billet TER dès 15€",
-    isNavigo: false,
-    distance: "18.7 km",
-    elevation: "+410m",
-    description: "Une rando sportive aux confins de la Bourgogne. Traversez des vallons calcaires encaissés et des forêts sauvages de hêtres. Un dépaysement total.",
-    highlight: "Pour les amateurs de grands espaces et de silence.",
-  },
-];
 
 // --- CAROUSEL TOURS DATA ---
 interface Tour {
@@ -519,6 +457,35 @@ const TOURS: Tour[] = [
   },
 ];
 
+// --- FAQ DATA ---
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+const FAQ_ITEMS: FaqItem[] = [
+  {
+    q: "Comment fonctionnent les billets de train avec Névé ?",
+    a: "Tous nos itinéraires au départ de Paris (Transilien Ligne R, Ligne N, RER B) sont entièrement inclus dans le pass Navigo classique (zones 1 à 5). Si vous n'avez pas de pass Navigo, vous pouvez acheter un simple billet Origine-Destination en gare ou directement sur l'application Île-de-France Mobilités."
+  },
+  {
+    q: "Ai-je besoin d'une voiture pour accéder aux randonnées ?",
+    a: "Non, aucunement. Toutes nos micro-aventures sont conçues pour être 100% sans voiture. Les départs et arrivées se font directement depuis les gares connectées au réseau de transports en commun francilien. Il vous suffit de descendre du train et de suivre le sentier."
+  },
+  {
+    q: "Quel équipement dois-je prévoir pour la journée ?",
+    a: "Une bonne paire de baskets ou de chaussures de randonnée, un sac à dos léger avec au moins 1,5 litre d'eau, des encas (fruits secs, barres de céréales), et des vêtements adaptés à la météo (coupe-vent, imperméable en cas de pluie). L'itinéraire GPX s'importe en un clic sur votre smartphone pour vous guider."
+  },
+  {
+    q: "Les parcours sont-ils adaptés aux débutants ou aux enfants ?",
+    a: "Oui, nos tracés sont pensés pour être accessibles. Nous indiquons clairement la distance, le dénivelé positif et le temps moyen de marche. La forêt de Meudon est particulièrement recommandée pour une première sortie douce, tandis que Fontainebleau comporte des chaos rocheux amusants pour les plus aventureux."
+  },
+  {
+    q: "Que se passe-t-il en cas de retard ou de grève des trains ?",
+    a: "Névé surveille en continu l'état du trafic SNCF et RATP. En cas de perturbations majeures signalées avant votre départ ou pendant votre randonnée, l'application vous propose des itinéraires alternatifs ou ajuste l'heure recommandée de retour pour que vous soyez rentré sereinement pour le dîner."
+  }
+];
+
 export default function Home() {
   // Mobile navigation state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -531,6 +498,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDest, setSelectedDest] = useState<'fontainebleau' | 'chevreuse'>('fontainebleau');
   const [loadingStep, setLoadingStep] = useState(0);
+  const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -672,8 +640,8 @@ export default function Home() {
         const elEnd = document.createElement("div");
         elEnd.className = "relative flex items-center justify-center cursor-pointer";
         elEnd.innerHTML = `
-          <div class="absolute w-8 h-8 rounded-full bg-[#f59e0b]/30 animate-ping"></div>
-          <div class="relative w-4 h-4 rounded-full bg-[#f59e0b] border-2 border-white shadow-md"></div>
+          <div class="absolute w-8 h-8 rounded-full bg-amber-500/30 animate-ping"></div>
+          <div class="relative w-4 h-4 rounded-full bg-amber-500 border-2 border-white shadow-md"></div>
         `;
 
         new maplibregl.Marker({ element: elEnd })
@@ -690,41 +658,12 @@ export default function Home() {
     };
   }, [heroState, selectedDest]);
 
-  // Interactive slider state: 0 = 30 min, 1 = 1 hour, 2 = 2 hours
-  const [sliderVal, setSliderVal] = useState<number>(1);
-  const activeDest = DESTINATIONS[sliderVal];
+
 
   // Carousel Active index state for "Fresh Journeys"
   const [carouselIndex, setCarouselIndex] = useState(0);
 
-  // Lead capture form state
-  const [contactInput, setContactInput] = useState("");
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formError, setFormError] = useState("");
 
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError("");
-
-    if (!contactInput || contactInput.trim() === "") {
-      setFormError("Veuillez saisir votre e-mail ou numéro de téléphone.");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/;
-
-    const isValidEmail = emailRegex.test(contactInput.trim());
-    const isValidPhone = phoneRegex.test(contactInput.trim());
-
-    if (!isValidEmail && !isValidPhone) {
-      setFormError("Format invalide. Utilisez un e-mail ou un numéro de téléphone français.");
-      return;
-    }
-
-    setFormSubmitted(true);
-    setContactInput("");
-  };
 
   const handlePrevCarousel = () => {
     setCarouselIndex((prev) => (prev === 0 ? TOURS.length - 1 : prev - 1));
@@ -754,93 +693,92 @@ export default function Home() {
               {/* Logo Brand */}
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 cursor-pointer"
+                className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded-lg cursor-pointer"
               >
                 <CustomMountainLogo className="w-7 h-7 text-neutral-900 group-hover:scale-105 transition-transform duration-200" />
                 <span className="font-black text-xl tracking-widest text-neutral-900 uppercase">Névé</span>
               </button>
-
+ 
               {/* Desktop Menu */}
               <nav className="hidden md:flex items-center gap-6">
-
                 <button
                   onClick={() => scrollToId("tours")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
+                  className="text-xs font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Itinéraires
                 </button>
                 <button
-                  onClick={() => scrollToId("destinations")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
+                  onClick={() => scrollToId("hero")}
+                  className="text-xs font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Explorer
                 </button>
                 <button
                   onClick={() => scrollToId("safety")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
+                  className="text-xs font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Garanties
                 </button>
                 <button
                   onClick={() => scrollToId("instagram")}
-                  className="text-[10px] font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900 transition-colors cursor-pointer"
+                  className="text-xs font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Communauté
                 </button>
               </nav>
-
+ 
               {/* Right CTA */}
               <div className="hidden md:flex items-center gap-4">
                 <button
                   onClick={() => scrollToId("footer-cta")}
-                  className="px-5 py-2 bg-neutral-950 hover:bg-neutral-800 text-white text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm cursor-pointer"
+                  className="px-5 py-2 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
                 >
                   Lancer l'app
                 </button>
               </div>
-
+ 
               {/* Mobile Menu Trigger */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 text-neutral-900 focus:outline-none cursor-pointer"
-                aria-label="Menu"
+                className="md:hidden p-2 text-neutral-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded-lg cursor-pointer"
+                aria-label={mobileMenuOpen ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"}
+                aria-expanded={mobileMenuOpen}
               >
                 {mobileMenuOpen ? <XIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
               </button>
             </div>
-
+ 
             {/* Mobile Menu Panel */}
             {mobileMenuOpen && (
               <div className="pointer-events-auto md:hidden absolute top-20 left-6 right-6 bg-white/95 backdrop-blur-xl border border-neutral-200/60 px-6 py-8 flex flex-col gap-6 animate-fade-in shadow-2xl rounded-[24px] text-neutral-900">
-
                 <button
                   onClick={() => scrollToId("tours")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Itinéraires
                 </button>
                 <button
-                  onClick={() => scrollToId("destinations")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
+                  onClick={() => scrollToId("hero")}
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Explorer
                 </button>
                 <button
                   onClick={() => scrollToId("safety")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Garanties
                 </button>
                 <button
                   onClick={() => scrollToId("instagram")}
-                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-600 hover:text-neutral-900"
+                  className="text-left text-sm font-bold uppercase tracking-widest text-neutral-700 hover:text-neutral-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-2 py-1"
                 >
                   Communauté
                 </button>
                 <hr className="border-neutral-200/60" />
                 <button
                   onClick={() => scrollToId("footer-cta")}
-                  className="w-full text-center py-4 bg-primary-900 hover:bg-primary-950 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300"
+                  className="w-full text-center py-4 bg-primary-900 hover:bg-primary-950 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
                 >
                   Lancer l'app
                 </button>
@@ -851,24 +789,24 @@ export default function Home() {
       </div>
 
       {/* 2. HERO SECTION */}
-      <section className={`relative overflow-hidden transition-all duration-1000 ${heroState === 'map' ? 'bg-[#f4f3f0] h-screen' : 'bg-neutral-50 min-h-screen'} flex items-center -mt-20 ${heroState === 'map' ? 'pt-20 pb-0' : 'pt-48 pb-24 md:pt-56 md:pb-32'}`}>
+      <section id="hero" className={`relative overflow-hidden transition-all duration-1000 ${heroState === 'map' ? 'bg-primary-50 h-screen' : 'bg-neutral-50 min-h-screen'} flex items-center -mt-20 ${heroState === 'map' ? 'pt-20 pb-0' : 'pt-48 pb-24 md:pt-56 md:pb-32'}`}>
         {/* Background image covering full height (Only visible in search & loading states, hidden in map state) */}
         <div className={`absolute inset-0 z-0 transition-all duration-1000 ${heroState === 'map' ? 'opacity-0 pointer-events-none scale-105 blur-sm' : 'opacity-100 scale-100'}`}>
           <Image 
-            src="/neve_hero_bg_misty.jpg" 
-            alt="Route de montagne sinueuse et sapins dans la brume" 
+            src="/neve_footer_bg.jpg" 
+            alt="Randonneur au sommet d'une falaise admirant la vallée de montagne" 
             fill 
             priority
             className="object-cover object-center"
             sizes="100vw"
           />
-          {/* Light gradient overlay to make text highly legible on the light sky background while maintaining a light aesthetic */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-neutral-950/15 to-neutral-50 z-1"></div>
+          {/* Light gradient overlay to make text highly legible on the sunset sky while maintaining a light aesthetic */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-neutral-950/20 to-neutral-50 z-1"></div>
         </div>
 
         {/* Full-bleed Map View in background during map state */}
         {heroState === 'map' && (
-          <div className="absolute inset-0 z-0 bg-[#f4f3f0] w-full h-full animate-fade-in">
+          <div className="absolute inset-0 z-0 bg-primary-50 w-full h-full animate-fade-in">
             <div ref={mapContainerRef} className="w-full h-full" />
           </div>
         )}
@@ -878,9 +816,12 @@ export default function Home() {
           {heroState === 'search' || heroState === 'loading' ? (
             <>
               {/* Heading */}
-              <h1 className="text-[32px] sm:text-[48px] md:text-[52px] font-black text-white uppercase tracking-tight leading-[36px] sm:leading-[52px] md:leading-[52px] drop-shadow-sm text-center">
+              <h1 
+                className="text-[32px] sm:text-[48px] md:text-[52px] font-black text-white uppercase tracking-tight leading-[36px] sm:leading-[52px] md:leading-[52px] text-center"
+                style={{ textShadow: '0 2px 14px rgba(0, 0, 0, 0.75), 0 1px 3px rgba(0, 0, 0, 0.9)' }}
+              >
                 Quittez Paris sur un coup de tête. <br />
-                <span className="text-[#508235] block my-2">Rentrez pour le dîner.</span>
+                <span className="text-white block my-2 bg-primary-700 max-w-fit mx-auto py-2 px-4 rounded-lg shadow-md" style={{ textShadow: 'none' }}>Rentrez pour le dîner.</span>
                 <span>Sans stress.</span>
               </h1>
 
@@ -890,7 +831,7 @@ export default function Home() {
                   {/* Search Bar Input (White pill with green button) */}
                   <form 
                     onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(); }}
-                    className="relative flex items-center bg-white border border-neutral-200/60 rounded-full px-5 py-3.5 shadow-sm focus-within:border-primary-500/50 transition-colors"
+                    className="relative flex items-center bg-white border border-neutral-200/60 rounded-full px-5 py-3.5 shadow-sm focus-within:ring-2 focus-within:ring-primary-700 focus-within:border-transparent transition-all"
                   >
                     <svg className="w-4.5 h-4.5 text-neutral-400 mr-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -900,76 +841,85 @@ export default function Home() {
                       placeholder="Où voulez-vous randonner ?" 
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="text-sm text-neutral-800 placeholder-neutral-400 font-medium flex-1 bg-transparent border-none outline-none focus:ring-0 p-0"
+                      className="text-sm text-neutral-800 placeholder-neutral-600 font-medium flex-1 bg-transparent border-none outline-none focus:ring-0 p-0"
+                      aria-label="Rechercher une destination de randonnée"
                     />
                     <button 
                       type="submit"
-                      className="w-8 h-8 rounded-full bg-[#508235] hover:bg-[#446e2d] flex items-center justify-center text-white font-bold text-sm cursor-pointer transition-colors shadow-sm ml-2"
-                      aria-label="Rechercher"
+                      className="w-8 h-8 rounded-full bg-primary-600 hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 flex items-center justify-center text-white font-bold text-sm cursor-pointer transition-colors shadow-sm ml-2"
+                      aria-label="Lancer la recherche"
                     >
                       <ArrowRightIcon className="w-4 h-4" />
                     </button>
                   </form>
 
                   {/* Suggestions Header */}
-                  <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider text-neutral-500 mt-6 mb-3 px-1">
+                  <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-neutral-600 mt-6 mb-3 px-1">
                     <span>Recherches fréquentes</span>
-                    <span className="text-[#508235] hover:underline cursor-pointer" onClick={() => handleSearchSubmit()}>Voir tout</span>
+                    <button 
+                      type="button"
+                      onClick={() => handleSearchSubmit()}
+                      className="text-primary-700 hover:underline cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 rounded px-1.5 py-0.5 text-xs font-bold"
+                    >
+                      Voir tout
+                    </button>
                   </div>
 
                   {/* Suggestions List */}
                   <div className="space-y-3">
                     {/* Fontainebleau */}
-                    <div 
+                    <button 
+                      type="button"
                       onClick={() => handleSearchSubmit('fontainebleau')}
-                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-neutral-100/80 hover:border-primary-500/30 hover:shadow-md transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.995]"
+                      className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-white border border-neutral-100/80 hover:border-primary-500/30 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.995]"
                     >
                       <div className="flex items-center min-w-0">
                         <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200/50">
-                          <Image src="/journey_mountain.png" alt="Fontainebleau" fill className="object-cover" />
+                          <Image src="/journey_mountain.png" alt="Forêt de Fontainebleau" fill className="object-cover" />
                         </div>
                         <div className="ml-4 text-left">
-                          <h4 className="text-xs font-bold text-neutral-900">Forêt de Fontainebleau</h4>
-                          <p className="text-[10px] text-neutral-500 mt-1">38 min de train (Gare de Lyon) • 14.2 km</p>
+                          <h4 className="text-sm font-bold text-neutral-900">Forêt de Fontainebleau</h4>
+                          <p className="text-xs text-neutral-600 mt-0.5">38 min de train • 14.2 km</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs font-bold text-[#508235] flex items-center gap-0.5 justify-end">
-                          <span>★</span>
+                        <div className="text-sm font-black text-primary-700 flex items-center gap-0.5 justify-end">
+                          <span className="text-amber-600">★</span>
                           <span>4.9</span>
                         </div>
                       </div>
-                    </div>
+                    </button>
 
                     {/* Chevreuse */}
-                    <div 
+                    <button 
+                      type="button"
                       onClick={() => handleSearchSubmit('chevreuse')}
-                      className="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-neutral-100/80 hover:border-primary-500/30 hover:shadow-md transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.995]"
+                      className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-white border border-neutral-100/80 hover:border-primary-500/30 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 transition-all duration-300 cursor-pointer shadow-sm active:scale-[0.995]"
                     >
                       <div className="flex items-center min-w-0">
                         <div className="relative w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 border border-neutral-200/50">
                           <Image src="/journey_river.png" alt="Vallée de la Chevreuse" fill className="object-cover" />
                         </div>
                         <div className="ml-4 text-left">
-                          <h4 className="text-xs font-bold text-neutral-900">Vallée de la Chevreuse</h4>
-                          <p className="text-[10px] text-neutral-500 mt-1">45 min de RER (Gare du Nord) • 15.8 km</p>
+                          <h4 className="text-sm font-bold text-neutral-900">Vallée de la Chevreuse</h4>
+                          <p className="text-xs text-neutral-600 mt-0.5">45 min de RER • 15.8 km</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xs font-bold text-[#508235] flex items-center gap-0.5 justify-end">
-                          <span>★</span>
+                        <div className="text-sm font-black text-primary-700 flex items-center gap-0.5 justify-end">
+                          <span className="text-amber-600">★</span>
                           <span>4.8</span>
                         </div>
                       </div>
-                    </div>
+                    </button>
                   </div>
                 </div>
               ) : (
                 // Centered Light Frosted Glass Loading Card
                 <div className="relative w-full max-w-[680px] mx-auto bg-white/60 backdrop-blur-md border border-white/40 shadow-xl rounded-[32px] p-6 text-neutral-900 text-center mt-10 items-center justify-center py-16 animate-scale-up">
-                  <div className="w-12 h-12 rounded-full border-4 border-neutral-200 border-t-[#508235] animate-spin mx-auto"></div>
+                  <div className="w-12 h-12 rounded-full border-4 border-neutral-200 border-t-primary-700 animate-spin mx-auto"></div>
                   <div className="text-center space-y-3 mt-6">
-                    <p className="text-xs font-bold uppercase tracking-widest text-[#508235]">Recherche d'itinéraire...</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-primary-700">Recherche d'itinéraire...</p>
                     <p className="text-sm font-semibold text-neutral-800 transition-all duration-300">
                       {loadingStep === 0 && "Calcul de l'itinéraire optimal sans voiture..."}
                       {loadingStep === 1 && "Vérification des prochains départs SNCF..."}
@@ -980,7 +930,10 @@ export default function Home() {
               )}
 
               {/* Subheadline (Centered, white for visibility) */}
-              <p className="text-white text-sm sm:text-base text-center font-light tracking-wide max-w-2xl mx-auto mt-10 leading-relaxed drop-shadow-md">
+              <p 
+                className="text-white text-sm sm:text-base text-center font-normal tracking-wide max-w-2xl mx-auto mt-10 leading-relaxed"
+                style={{ textShadow: '0 1px 8px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0, 0, 0, 0.9)' }}
+              >
                 Névé planifie votre rando en fonction du prochain train. <br />
                 Zéro voiture, zéro calcul, 100% d'évasion en direct sur votre écran.
               </p>
@@ -1004,11 +957,14 @@ export default function Home() {
                     +
                   </div>
                 </div>
-                <div className="text-center sm:text-left text-white drop-shadow-sm">
+                <div 
+                  className="text-center sm:text-left text-white"
+                  style={{ textShadow: '0 1px 4px rgba(0, 0, 0, 0.8)' }}
+                >
                   <p className="text-xs font-semibold tracking-wide">
                     Déjà +500 samedis sauvés de la routine parisienne.
                   </p>
-                  <p className="text-[10px] text-neutral-300 mt-0.5">
+                  <p className="text-xs text-neutral-100 mt-0.5 font-normal">
                     Aucun retard de train manqué grâce aux alertes en direct.
                   </p>
                 </div>
@@ -1022,7 +978,7 @@ export default function Home() {
                 {/* Close / Back button */}
                 <button 
                   onClick={() => setHeroState('search')}
-                  className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-neutral-500 hover:text-neutral-900 transition-colors cursor-pointer w-fit"
+                  className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-600 hover:text-neutral-950 transition-colors cursor-pointer w-fit focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded px-1.5 py-0.5"
                 >
                   <ArrowLeftIcon className="w-3.5 h-3.5" />
                   <span>Nouvelle recherche</span>
@@ -1031,8 +987,8 @@ export default function Home() {
                 {/* Header info */}
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider uppercase bg-[#508235]/10 text-[#508235] border border-[#508235]/20 mb-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#508235] animate-pulse"></span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-primary-700/10 text-primary-700 border border-primary-700/20 mb-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-primary-700 animate-pulse"></span>
                       <span>Trajet optimal trouvé</span>
                     </span>
                     <h2 className="text-xl font-black uppercase tracking-tight text-neutral-900 leading-tight">
@@ -1040,27 +996,27 @@ export default function Home() {
                     </h2>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-bold text-[#f59e0b] flex items-center gap-0.5 justify-end">
-                      <span>★</span>
+                    <div className="text-xs font-bold text-amber-800 flex items-center gap-0.5 justify-end">
+                      <span className="text-amber-600">★</span>
                       <span>{HERO_ROUTES[selectedDest].rating}</span>
                     </div>
-                    <span className="text-[9px] text-neutral-500 block mt-0.5">Note Rando</span>
+                    <span className="text-xs text-neutral-600 block mt-0.5">Note Rando</span>
                   </div>
                 </div>
 
                 {/* Journey Metrics */}
                 <div className="grid grid-cols-3 gap-2 py-3 border-y border-neutral-200/80 text-center">
                   <div>
-                    <p className="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Transport</p>
+                    <p className="text-[11px] uppercase font-bold text-neutral-600 tracking-wider">Transport</p>
                     <p className="text-xs font-bold text-neutral-900 mt-0.5">{HERO_ROUTES[selectedDest].trainTime}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] uppercase font-bold text-neutral-500 tracking-wider">Randonnée</p>
+                    <p className="text-[11px] uppercase font-bold text-neutral-600 tracking-wider">Randonnée</p>
                     <p className="text-xs font-bold text-neutral-900 mt-0.5">{HERO_ROUTES[selectedDest].distance}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] uppercase font-bold text-[#508235] mt-0.5">Tarif</p>
-                    <p className="text-xs font-bold text-[#508235] mt-0.5">Navigo</p>
+                    <p className="text-[11px] uppercase font-bold text-primary-700 mt-0.5">Tarif</p>
+                    <p className="text-xs font-bold text-primary-700 mt-0.5">Navigo</p>
                   </div>
                 </div>
 
@@ -1072,9 +1028,9 @@ export default function Home() {
                       <div className="flex flex-col items-center">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
                           step.type === 'walk' ? 'bg-neutral-100 text-neutral-500 border border-neutral-200' :
-                          step.type === 'train' ? 'bg-emerald-50 text-[#508235] border border-emerald-100' :
+                          step.type === 'train' ? 'bg-emerald-50 text-primary-700 border border-emerald-100' :
                           step.type === 'hike' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                          'bg-primary-50 text-[#508235] border border-primary-100'
+                          'bg-primary-50 text-primary-700 border border-primary-100'
                         }`}>
                           {step.type === 'walk' && "🚶"}
                           {step.type === 'train' && "🚇"}
@@ -1089,12 +1045,12 @@ export default function Home() {
                       <div className="flex-1 min-w-0 pt-0.5">
                         <div className="flex justify-between items-start gap-1">
                           <h4 className="text-xs font-bold text-neutral-900 leading-snug">{step.desc}</h4>
-                          <span className="text-[9px] font-bold text-neutral-500 flex-shrink-0 bg-neutral-100 px-1.5 py-0.5 rounded">
+                          <span className="text-[10px] font-bold text-neutral-700 flex-shrink-0 bg-neutral-200/60 px-1.5 py-0.5 rounded">
                             {step.duration}
                           </span>
                         </div>
                         {step.detail && (
-                          <p className="text-[10px] text-neutral-500 mt-1 leading-relaxed font-light">{step.detail}</p>
+                          <p className="text-xs text-neutral-600 mt-1 leading-relaxed font-normal">{step.detail}</p>
                         )}
                       </div>
                     </div>
@@ -1104,7 +1060,7 @@ export default function Home() {
                 {/* Importer CTA */}
                 <button 
                   onClick={() => scrollToId("footer-cta")}
-                  className="w-full py-3 bg-[#508235] hover:bg-[#446e2d] text-white text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-lg shadow-primary-950/30 text-center cursor-pointer mt-2"
+                  className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-lg shadow-primary-950/30 text-center cursor-pointer mt-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
                 >
                   Importer la trace GPX
                 </button>
@@ -1127,7 +1083,7 @@ export default function Home() {
               Explorez les pépites cachées d'Île-de-France
             </h2>
             <button 
-              onClick={() => scrollToId("destinations")}
+              onClick={() => scrollToId("hero")}
               className="inline-flex items-center justify-center bg-primary-900 hover:bg-primary-950 text-white text-xs font-bold uppercase tracking-widest px-8 py-3 rounded-full transition-all duration-300 mt-4 shadow-sm cursor-pointer"
             >
               Explorez les tracés
@@ -1157,7 +1113,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-bold text-lg uppercase tracking-wide">Massifs & Forêts</h3>
-                <p className="text-neutral-300 text-xs leading-relaxed font-light">
+                <p className="text-neutral-200 text-xs leading-relaxed font-normal">
                   Respirez le grand air des pinèdes. Parcourez des sentiers de grès sauvages au cœur de Fontainebleau.
                 </p>
               </div>
@@ -1181,7 +1137,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-bold text-lg uppercase tracking-wide">Vallées Sauvages</h3>
-                <p className="text-neutral-300 text-xs leading-relaxed font-light">
+                <p className="text-neutral-200 text-xs leading-relaxed font-normal">
                   Longez des ruisseaux sinueux et traversez des prairies fleuries au creux du Vexin Français.
                 </p>
               </div>
@@ -1206,7 +1162,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-bold text-lg uppercase tracking-wide">Falaises & Crêtes</h3>
-                <p className="text-neutral-300 text-xs leading-relaxed font-light">
+                <p className="text-neutral-200 text-xs leading-relaxed font-normal">
                   Prenez de la hauteur. Admirez des panoramas exceptionnels depuis les rochers de grès.
                 </p>
               </div>
@@ -1230,7 +1186,7 @@ export default function Home() {
                   </svg>
                 </div>
                 <h3 className="font-bold text-lg uppercase tracking-wide">Refuges & Saisons</h3>
-                <p className="text-neutral-300 text-xs leading-relaxed font-light">
+                <p className="text-neutral-200 text-xs leading-relaxed font-normal">
                   Profitez des couleurs changeantes de l'automne ou de la brume matinale sur les étangs.
                 </p>
               </div>
@@ -1244,13 +1200,13 @@ export default function Home() {
       <section id="safety" className="py-24 md:py-36 bg-neutral-50 border-b border-neutral-200 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-20">
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-400">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary-700">
               SÉCURITÉ & FIABILITÉ
             </span>
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-neutral-900 mt-3">
               Votre confort et votre sécurité sont notre priorité.
             </h2>
-            <p className="text-neutral-500 mt-4 text-sm md:text-base">
+            <p className="text-neutral-600 mt-4 text-sm md:text-base">
               Randonnez en toute décontraction. Nos guides et algorithmes veillent sur chaque étape pour éliminer tous les risques de logistique.
             </p>
           </div>
@@ -1278,7 +1234,7 @@ export default function Home() {
                 <ShieldIcon className="w-6 h-6" />
               </div>
               <h3 className="font-bold text-base uppercase tracking-wider">Sécurité</h3>
-              <p className="text-xs text-neutral-300 mt-3.5 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-3.5 leading-relaxed">
                 Nous appliquons des normes de sécurité rigoureuses pour chaque tracé. L'itinéraire est doublement vérifié et mis à jour.
               </p>
             </div>
@@ -1289,7 +1245,7 @@ export default function Home() {
                 <HeartIcon className="w-6 h-6 text-rose-500" />
               </div>
               <h3 className="font-bold text-base uppercase tracking-wider">Mémorable</h3>
-              <p className="text-xs text-neutral-300 mt-3.5 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-3.5 leading-relaxed">
                 Grâce à nos itinéraires exclusifs, nous garantisons à chaque randonneur un parcours riche en émotions et en dépaysement.
               </p>
             </div>
@@ -1300,7 +1256,7 @@ export default function Home() {
                 8+
               </div>
               <h3 className="font-bold text-base uppercase tracking-wider">Expérience</h3>
-              <p className="text-xs text-neutral-300 mt-3.5 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-3.5 leading-relaxed">
                 Plus de 8 ans d'organisation de sorties outdoor et d'analyse de données de transports en commun franciliens.
               </p>
             </div>
@@ -1308,10 +1264,10 @@ export default function Home() {
             {/* Card 4: Best Service (Far Right, Medium-Low) */}
             <div className="absolute right-[calc(50%-490px)] top-[62%] -translate-y-1/2 z-20 w-[290px] bg-primary-900 text-white py-9.5 px-7.5 rounded-[32px] shadow-2xl border border-primary-950/30 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02]">
               <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-primary-900 mb-6 shadow-md border border-neutral-100/30">
-                <CompassIcon className="w-6 h-6 text-primary-600" />
+                <CompassIcon className="w-6 h-6 text-primary-700" />
               </div>
               <h3 className="font-bold text-base uppercase tracking-wider">Meilleur Service</h3>
-              <p className="text-xs text-neutral-300 mt-3.5 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-3.5 leading-relaxed">
                 Une assistance réactive en direct, des conseils d'allure et des tracés adaptés au niveau de chaque participant.
               </p>
             </div>
@@ -1337,7 +1293,7 @@ export default function Home() {
                 <ShieldIcon className="w-5.5 h-5.5" />
               </div>
               <h3 className="font-bold text-base uppercase tracking-wide">Sécurité</h3>
-              <p className="text-[11px] text-neutral-300 mt-2 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-2 leading-relaxed">
                 Nous appliquons des normes de sécurité rigoureuses pour chaque tracé. L'itinéraire est doublement vérifié et mis à jour.
               </p>
             </div>
@@ -1348,7 +1304,7 @@ export default function Home() {
                 <HeartIcon className="w-5.5 h-5.5 text-rose-500" />
               </div>
               <h3 className="font-bold text-base uppercase tracking-wide">Mémorable</h3>
-              <p className="text-[11px] text-neutral-300 mt-2 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-2 leading-relaxed">
                 Grâce à nos itinéraires exclusifs, nous garantisons à chaque randonneur un parcours riche en émotions et en dépaysement.
               </p>
             </div>
@@ -1359,7 +1315,7 @@ export default function Home() {
                 8+
               </div>
               <h3 className="font-bold text-base uppercase tracking-wide">Expérience</h3>
-              <p className="text-[11px] text-neutral-300 mt-2 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-2 leading-relaxed">
                 Plus de 8 ans d'organisation de sorties outdoor et d'analyse de données de transports en commun franciliens.
               </p>
             </div>
@@ -1367,10 +1323,10 @@ export default function Home() {
             {/* Mobile Card 4 */}
             <div className="bg-primary-900 text-white p-6.5 rounded-[24px] border border-primary-950/30 flex flex-col items-center text-center shadow-lg w-full">
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary-900 mb-4 shadow-sm">
-                <CompassIcon className="w-5.5 h-5.5 text-primary-600" />
+                <CompassIcon className="w-5.5 h-5.5 text-primary-700" />
               </div>
               <h3 className="font-bold text-base uppercase tracking-wide">Meilleur Service</h3>
-              <p className="text-[11px] text-neutral-300 mt-2 leading-relaxed">
+              <p className="text-xs text-neutral-100 mt-2 leading-relaxed">
                 Une assistance réactive en direct, des conseils d'allure et des tracés adaptés au niveau de chaque participant.
               </p>
           </div>
@@ -1378,164 +1334,13 @@ export default function Home() {
       </div>
     </section>
 
-      {/* 4. INTERACTIVE SIMULATOR SECTION */}
-      <section id="destinations" className="bg-neutral-100/50 py-24 md:py-32 border-b border-neutral-200">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-500">Simulateur V1</span>
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-neutral-900 mt-3">
-              Où partez-vous ce samedi ?
-            </h2>
-            <p className="text-neutral-600 mt-4 text-sm md:text-base">
-              Ajustez vos critères pour avoir un aperçu des parcours connectés en direct. Zéro logistique à planifier.
-            </p>
-          </div>
 
-          {/* Interactive controls */}
-          <div className="max-w-4xl mx-auto bg-white border border-neutral-200 rounded-3xl shadow-xl p-6 md:p-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center pb-8 border-b border-neutral-150">
-              
-              {/* Origin fixed control */}
-              <div>
-                <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-3">
-                  Gare de départ
-                </label>
-                <div className="w-full flex items-center justify-between border border-neutral-200 bg-neutral-50 px-5 py-4 rounded-xl cursor-not-allowed">
-                  <span className="font-bold text-sm text-neutral-800 uppercase tracking-wider">Au départ de : Paris</span>
-                  <span className="text-[10px] text-neutral-400 font-bold uppercase">Fixe (V1)</span>
-                </div>
-                <p className="text-[11px] text-neutral-500 mt-2">
-                  D'autres gares de départ (Lyon, Lille, Marseille) seront disponibles prochainement.
-                </p>
-              </div>
-
-              {/* Slider for travel time */}
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <label htmlFor="duration-slider" className="text-xs font-bold text-neutral-400 uppercase tracking-widest">
-                    Temps de train toléré
-                  </label>
-                  <span className="text-[10px] font-bold text-white bg-primary-900 px-2.5 py-1 uppercase tracking-wider rounded-md">
-                    {sliderVal === 0 ? "Moins de 30 min" : sliderVal === 1 ? "Moins d'1 heure" : "Moins de 2 heures"}
-                  </span>
-                </div>
-                
-                {/* Custom Styled Slider */}
-                <div className="py-2">
-                  <input
-                    type="range"
-                    id="duration-slider"
-                    min="0"
-                    max="2"
-                    step="1"
-                    value={sliderVal}
-                    onChange={(e) => setSliderVal(parseInt(e.target.value))}
-                    className="w-full h-2 bg-neutral-200 appearance-none cursor-pointer rounded-lg accent-primary-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-900"
-                    aria-label="Sélectionner le temps d'accès en train"
-                  />
-                  <div className="flex justify-between text-[10px] font-bold text-neutral-500 uppercase tracking-wider mt-3">
-                    <span className={sliderVal === 0 ? "text-neutral-900 font-black" : ""}>30 min</span>
-                    <span className={sliderVal === 1 ? "text-neutral-900 font-black" : ""}>1h00</span>
-                    <span className={sliderVal === 2 ? "text-neutral-900 font-black" : ""}>2h00</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Simulated Vignette Destination */}
-            <div className="mt-8 pt-4">
-              <div className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-6">
-                Micro-aventure recommandée
-              </div>
-
-              <div key={activeDest.id} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch animate-fade-in">
-                {/* Destination Visual Abstract */}
-                <div className="lg:col-span-5 relative min-h-[240px] bg-neutral-900 flex flex-col justify-between p-6 overflow-hidden rounded-2xl border border-neutral-800">
-                  <Image 
-                    src={sliderVal === 0 ? "/journey_river.png" : sliderVal === 1 ? "/journey_mountain.png" : "/forest_lake.png"} 
-                    alt={activeDest.name}
-                    fill
-                    className="object-cover opacity-60 mix-blend-overlay"
-                    sizes="(max-w-7xl) 320px"
-                  />
-                  
-                  {/* Glowing organic indicator for weather/logistics */}
-                  <div className="flex justify-between items-start relative z-10">
-                    <span className="text-[10px] font-bold uppercase tracking-widest bg-neutral-950/80 backdrop-blur-md px-3 py-1.5 text-white rounded-full border border-neutral-700/50">
-                      {activeDest.line}
-                    </span>
-                    <span className="text-2xl" role="img" aria-label="météo">
-                      {activeDest.weatherIcon}
-                    </span>
-                  </div>
-
-                  <div className="relative z-10 mt-auto">
-                    <div className="text-[10px] uppercase font-bold text-neutral-400 tracking-widest">
-                      {activeDest.station}
-                    </div>
-                    <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white mt-1">
-                      {activeDest.name}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Destination description & logistics */}
-                <div className="lg:col-span-7 flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2.5">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-primary-600 bg-primary-50 px-2.5 py-1 rounded-full border border-primary-200">
-                        <TrainIcon className="w-3.5 h-3.5" />
-                        {activeDest.duration}
-                      </span>
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border ${
-                        activeDest.isNavigo 
-                          ? "text-primary-600 bg-primary-50 border-primary-200" 
-                          : "text-amber-600 bg-amber-50 border-amber-250"
-                      }`}>
-                        🎫 {activeDest.pricing}
-                      </span>
-                    </div>
-
-                    <p className="text-neutral-600 text-sm md:text-base leading-relaxed">
-                      {activeDest.description}
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-4 py-3 border-y border-neutral-200/60 text-xs">
-                      <div>
-                        <span className="block text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">Distance de marche</span>
-                        <span className="font-bold text-neutral-900 text-sm mt-0.5 block">{activeDest.distance}</span>
-                      </div>
-                      <div>
-                        <span className="block text-neutral-400 font-semibold uppercase tracking-wider text-[10px]">Dénivelé positif</span>
-                        <span className="font-bold text-neutral-900 text-sm mt-0.5 block">{activeDest.elevation}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                    <div className="text-xs font-semibold text-primary-600 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
-                      <span>{activeDest.highlight}</span>
-                    </div>
-                    <button
-                      onClick={() => scrollToId("footer-cta")}
-                      className="text-center bg-primary-900 hover:bg-primary-950 text-white font-bold text-xs tracking-widest uppercase py-4 px-6 rounded-full transition-all duration-300"
-                    >
-                      Obtenir l'itinéraire
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 5. TESTIMONIALS SECTION */}
       <section id="temoignages" className="bg-neutral-50 py-24 md:py-32 border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-4xl mx-auto">
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-400 block text-center">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary-700 block text-center">
               Preuve terrain
             </span>
             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-center mt-3 mb-16 text-neutral-900">
@@ -1549,7 +1354,7 @@ export default function Home() {
               </div>
 
               <blockquote className="relative z-10">
-                <p className="text-lg md:text-2xl font-light leading-relaxed text-neutral-700 italic">
+                <p className="text-lg md:text-2xl font-normal leading-relaxed text-neutral-700 italic">
                   "Je prenais des captures d'écran de mes horaires à chaque fois pour ne pas me perdre. Avec Névé, j'ai juste profité de ma rando à Fontainebleau sans regarder ma montre une seule fois."
                 </p>
                 
@@ -1560,15 +1365,15 @@ export default function Home() {
                     </div>
                     <div>
                       <div className="font-bold text-sm text-neutral-900">Rémi</div>
-                      <div className="text-xs text-neutral-400">23 ans — Randonneur urbain (Paris 11e)</div>
+                      <div className="text-xs text-neutral-600">23 ans — Randonneur urbain (Paris 11e)</div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-4 text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                    <span className="inline-flex items-center gap-1.5 text-primary-600 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
+                    <span className="inline-flex items-center gap-1.5 text-primary-700 bg-primary-50 px-3 py-1 rounded-full border border-primary-200">
                       🌲 Itinéraire fait : Fontainebleau
                     </span>
-                    <span>Samedis sauvés : 6</span>
+                    <span className="text-neutral-600 font-bold">Samedis sauvés : 6</span>
                   </div>
                 </footer>
               </blockquote>
@@ -1578,23 +1383,78 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16 text-center">
               <div className="bg-white border border-neutral-200/60 p-6 rounded-2xl">
                 <div className="text-3xl md:text-4xl font-black text-neutral-900 uppercase">98%</div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider font-bold mt-1">Des trains attrapés à l'heure</p>
+                <p className="text-xs text-neutral-600 uppercase tracking-wider font-bold mt-1">Des trains attrapés à l'heure</p>
               </div>
               <div className="bg-white border border-neutral-200/60 p-6 rounded-2xl">
                 <div className="text-3xl md:text-4xl font-black text-neutral-900 uppercase">0</div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider font-bold mt-1">Besoin de voiture de location</p>
+                <p className="text-xs text-neutral-600 uppercase tracking-wider font-bold mt-1">Besoin de voiture de location</p>
               </div>
               <div className="bg-white border border-neutral-200/60 p-6 rounded-2xl">
                 <div className="text-3xl md:text-4xl font-black text-neutral-900 uppercase">1 clic</div>
-                <p className="text-xs text-neutral-500 uppercase tracking-wider font-bold mt-1">Pour lancer la micro-aventure</p>
+                <p className="text-xs text-neutral-600 uppercase tracking-wider font-bold mt-1">Pour lancer la micro-aventure</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* 5.1 FAQ SECTION (Inspired by screenshot) */}
+      <section id="faq" className="bg-neutral-50 py-24 md:py-32 border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Section Header Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-end mb-16">
+            <div className="md:col-span-7 space-y-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-primary-700">
+                FAQ
+              </span>
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-neutral-900 mt-3 leading-[1.15]">
+                Des réponses à vos <br />
+                <span className="text-neutral-500 font-semibold">questions sur Névé</span>
+              </h2>
+            </div>
+            <div className="md:col-span-5 pb-1">
+              <p className="text-neutral-600 text-xs md:text-sm leading-relaxed">
+                Trouvez des réponses claires et complètes à toutes vos questions sur les escapades Névé. Que vous ayez besoin de détails sur les billets de train, l'équipement de randonnée ou les alertes de trafic, nous sommes là pour vous aider.
+              </p>
+            </div>
+          </div>
+
+          {/* Accordion List */}
+          <div className="max-w-4xl mx-auto space-y-4">
+            {FAQ_ITEMS.map((item, idx) => {
+              const isOpen = openFaqIdx === idx;
+              return (
+                <div 
+                  key={idx} 
+                  className="bg-white border border-neutral-200/80 rounded-[20px] overflow-hidden transition-all duration-350 hover:border-neutral-300 shadow-sm"
+                >
+                  <button
+                    onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
+                    className="w-full flex justify-between items-center px-6 py-5 text-left font-semibold text-neutral-900 transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-inset rounded-[20px] cursor-pointer"
+                  >
+                    <span className="text-xs md:text-sm font-bold text-neutral-800 tracking-tight">{item.q}</span>
+                    <span className="text-lg font-bold text-neutral-700 leading-none select-none pl-4">
+                      {isOpen ? "—" : "+"}
+                    </span>
+                  </button>
+                  
+                  {/* Smooth height transition for answer */}
+                  <div className={`transition-all duration-350 ease-in-out overflow-hidden ${
+                    isOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"
+                  }`}>
+                    <div className="px-6 pb-6 pt-1 text-xs md:text-sm text-neutral-700 font-normal leading-relaxed">
+                      {item.a}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* [NEW SECTION] 5.1 INSTAGRAM COMMUNITY FEED (Inspired by Image 1) */}
-      <section id="instagram" className="py-24 bg-neutral-50 border-b border-neutral-200">
+      <section id="instagram" className="py-24 bg-neutral-50">
         <div className="max-w-7xl mx-auto px-6">
           {/* Section Header Grid */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end mb-16">
@@ -1605,14 +1465,14 @@ export default function Home() {
               </h2>
             </div>
             <div className="md:col-span-4 flex flex-col items-start gap-4">
-              <p className="text-neutral-600 text-xs md:text-sm leading-relaxed max-w-sm">
+              <p className="text-neutral-700 text-xs md:text-sm leading-relaxed max-w-sm">
                 Restez au plus près de nos aventures ! Suivez-nous sur les réseaux pour les dernières nouvelles de nos tracés, des récits de randos et des moments insolites de chaque week-end.
               </p>
               <a 
                 href="https://instagram.com" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="inline-flex items-center gap-2 bg-primary-900 hover:bg-primary-950 text-white px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors shadow-sm"
+                className="inline-flex items-center gap-2 bg-primary-900 hover:bg-primary-950 text-white px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
               >
                 <span>Instagram</span>
                 <InstagramIcon className="w-4 h-4" />
@@ -1662,100 +1522,92 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 6. FOOTER & CLOSING CTA BANNER (Redesigned like Image 4) */}
-      <section id="footer-cta" className="bg-neutral-50 py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          {/* Main Rounded Image Banner (Teal pine forest lake) */}
-          <div className="relative w-full min-h-[480px] md:min-h-[580px] rounded-[40px] overflow-hidden flex flex-col justify-center items-center px-6 py-16 text-center shadow-2xl border border-neutral-200">
-            {/* Background image */}
-            <Image 
-              src="/forest_green.png" 
-              alt="Forêt de pins verdoyante et ensoleillée" 
-              fill 
-              className="object-cover"
-              sizes="(max-w-7xl) 1200px"
-            />
-            {/* Rich forest green overlay, lighter and highlighting the forest hues */}
-            <div className="absolute inset-0 bg-gradient-to-b from-primary-900/50 via-neutral-900/30 to-neutral-950/80"></div>
+      {/* 6. FOOTER & CLOSING CTA BANNER (Redesigned with full-bleed mountain landscape) */}
+      <section id="footer-cta" className="relative w-full bg-neutral-50 pt-20 pb-12 overflow-hidden flex flex-col justify-end min-h-[540px] md:min-h-[600px]">
+        {/* Background image covering full bleed */}
+        <div className="absolute inset-0 z-0">
+          <Image 
+            src="/neve_hero_bg_misty.jpg" 
+            alt="Route de montagne sinueuse et sapins dans la brume" 
+            fill 
+            className="object-cover object-bottom"
+            sizes="100vw"
+            priority
+          />
+          {/* Double gradient overlay: fades sky/mist to neutral-50 at top, adds dark tint behind text, and fades landscape to dark zinc at bottom */}
+          <div 
+            className="absolute inset-0 z-1 pointer-events-none"
+            style={{
+              background: `linear-gradient(to bottom, 
+                var(--color-neutral-50) 0%, 
+                var(--color-neutral-50) 15%, 
+                rgba(250, 250, 250, 0.8) 25%, 
+                rgba(250, 250, 250, 0) 45%
+              ), linear-gradient(to top, 
+                rgba(9, 9, 11, 0.95) 0%, 
+                rgba(9, 9, 11, 0.6) 35%, 
+                rgba(9, 9, 11, 0.35) 65%, 
+                rgba(9, 9, 11, 0.15) 100%
+              )`
+            }}
+          />
+        </div>
 
-            {/* Content overlay */}
-            <div className="relative z-10 max-w-2xl">
-              <span className="text-xs font-bold uppercase tracking-widest text-primary-400">Passez à l'action</span>
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white mt-4 mb-6 leading-none">
-                Prêt à explorer ? <br />
-                Bloquez votre samedi.
-              </h2>
-              <p className="text-neutral-300 text-sm md:text-base mb-12 max-w-lg mx-auto font-light leading-relaxed">
-                Inscrivez-vous pour recevoir jeudi à 18h la micro-aventure idéale de la semaine, configurée selon la météo et les horaires SNCF en direct.
-              </p>
+        {/* Content overlay - shifted down to the bottom-middle for maximum readability */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full text-center flex flex-col items-center justify-end flex-1 pb-6 mt-12">
+          <h2 
+            className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight text-white mb-4 leading-[1.08] max-w-5xl"
+            style={{ textShadow: '0 2px 14px rgba(0, 0, 0, 0.75), 0 1px 3px rgba(0, 0, 0, 0.9)' }}
+          >
+            Commencez votre aventure <br />
+            <span>en pleine nature dès aujourd'hui</span>
+          </h2>
+          
+          <p 
+            className="text-white/95 text-xs sm:text-sm md:text-base mb-8 max-w-xl mx-auto font-normal leading-relaxed"
+            style={{ textShadow: '0 1px 8px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.9)' }}
+          >
+            Téléchargez l'application Névé gratuitement pour planifier vos escapades en train, suivre nos tracés de randonnée exclusifs et voyager l'esprit léger.
+          </p>
 
-              {/* Form container */}
-              <div className="max-w-md mx-auto">
-                {!formSubmitted ? (
-                  <form onSubmit={handleSubscribe} className="space-y-4">
-                    <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
-                      <input
-                        type="text"
-                        placeholder="Votre e-mail ou téléphone"
-                        value={contactInput}
-                        onChange={(e) => setContactInput(e.target.value)}
-                        className="flex-1 bg-neutral-950/50 backdrop-blur-md border border-neutral-700 text-white placeholder-neutral-500 font-medium px-5 py-4 rounded-full focus:outline-none focus:border-white text-sm focus:ring-1 focus:ring-white"
-                        aria-label="Adresse e-mail ou numéro de téléphone pour inscription"
-                      />
-                      <button
-                        type="submit"
-                        className="bg-primary-500 hover:bg-primary-400 text-white font-bold text-xs tracking-widest uppercase py-4 px-8 rounded-full border border-primary-500 transition-all duration-300 active:scale-95 whitespace-nowrap shadow-md cursor-pointer"
-                      >
-                        M'inscrire pour samedi
-                      </button>
-                    </div>
-
-                    {formError && (
-                      <p className="text-left text-xs font-semibold text-rose-400 flex items-center gap-1.5 mt-2 justify-center">
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                        {formError}
-                      </p>
-                    )}
-                  </form>
-                ) : (
-                  <div className="bg-neutral-950/80 backdrop-blur-md border border-primary-800/80 p-6 rounded-3xl text-center space-y-3 animate-scale-up">
-                    <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center mx-auto">
-                      <CheckCircleIcon className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="font-bold text-lg text-white">Vous êtes inscrit !</h3>
-                    <p className="text-xs text-neutral-400">
-                      Merci ! Vous recevrez la sélection météo & train ce jeudi à 18h00. Soyez prêt pour l'évasion 🌲.
-                    </p>
-                    <button
-                      onClick={() => setFormSubmitted(false)}
-                      className="text-[10px] text-neutral-500 underline font-semibold uppercase tracking-wider hover:text-neutral-300"
-                    >
-                      S'inscrire avec un autre contact
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <p className="text-[11px] text-neutral-400 mt-6 font-medium">
-                Zéro spam. Désinscription en un clic. Vos données restent sécurisées.
-              </p>
-            </div>
+          {/* Download Buttons (Clean white button + Store Info) */}
+          <div className="flex flex-col items-center gap-4">
+            <button
+              onClick={() => {
+                alert("Lancement du téléchargement de Névé... L'application est en cours de déploiement et sera disponible très bientôt sur App Store et Google Play !");
+              }}
+              className="bg-white hover:bg-neutral-100 text-neutral-950 font-bold text-xs tracking-widest uppercase py-4 px-10 rounded-full transition-all duration-300 shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-98 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
+            >
+              Télécharger l'application
+            </button>
+            
+            <span 
+              className="text-xs font-bold text-white/75 uppercase tracking-wider mt-2"
+              style={{ textShadow: '0 1px 6px rgba(0, 0, 0, 0.8)' }}
+            >
+              Disponible sur iOS & Android
+            </span>
           </div>
 
-          {/* Footer content */}
-          <footer className="mt-16 pt-12 border-t border-neutral-200 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Vertical thin white line inspired by screenshot */}
+          <div className="w-[1px] h-16 bg-white/20 mt-10 animate-pulse"></div>
+        </div>
+
+        {/* Footer copyright and legal links area */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 w-full border-t border-white/10 pt-8 mt-auto">
+          <footer className="flex flex-col md:flex-row items-center justify-between gap-6 text-white/70">
             <div className="flex items-center gap-3">
-              <CustomMountainLogo className="w-6 h-6 text-primary-900" />
-              <span className="text-sm font-bold uppercase tracking-wider text-neutral-900">NÉVÉ</span>
+              <CustomMountainLogo className="w-6 h-6 text-white" />
+              <span className="text-sm font-bold uppercase tracking-wider text-white">NÉVÉ</span>
             </div>
             
-            <p className="text-xs text-neutral-500 order-last md:order-none">
+            <p className="text-xs order-last md:order-none">
               &copy; {new Date().getFullYear()} Névé Randonnées. Tous droits réservés.
             </p>
 
-            <div className="flex gap-6 text-xs text-neutral-500 font-semibold">
-              <a href="#" className="hover:text-primary-900 transition-colors">Politique de confidentialité</a>
-              <a href="#" className="hover:text-primary-900 transition-colors">Mentions légales</a>
+            <div className="flex gap-6 text-xs font-semibold">
+              <a href="#" className="hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 rounded px-1">Politique de confidentialité</a>
+              <a href="#" className="hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 rounded px-1">Mentions légales</a>
             </div>
           </footer>
         </div>
@@ -1767,20 +1619,20 @@ export default function Home() {
           <div className="bg-neutral-900 border border-neutral-800 text-white w-full max-w-xl p-6 md:p-8 rounded-3xl relative shadow-2xl">
             <button
               onClick={() => setConceptModalOpen(false)}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-white"
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 rounded-full p-1"
               aria-label="Fermer"
             >
               <XIcon className="w-5 h-5" />
             </button>
 
             <div className="mb-6">
-              <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest">Le concept Névé</span>
+              <span className="text-xs font-bold text-primary-400 uppercase tracking-widest">Le concept Névé</span>
               <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-white mt-1">
                 Comment ça marche ?
               </h3>
             </div>
 
-            <div className="space-y-4 text-sm text-neutral-400 leading-relaxed">
+            <div className="space-y-4 text-sm text-neutral-300 leading-relaxed">
               <div className="flex gap-4">
                 <div className="w-6 h-6 rounded-full bg-neutral-800 flex items-center justify-center text-xs font-bold text-white shrink-0">1</div>
                 <div>
@@ -1809,7 +1661,7 @@ export default function Home() {
             <div className="mt-8 pt-4 border-t border-neutral-800 flex justify-end">
               <button
                 onClick={() => setConceptModalOpen(false)}
-                className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold text-xs tracking-widest uppercase py-3.5 px-6 rounded-full"
+                className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold text-xs tracking-widest uppercase py-3.5 px-6 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
               >
                 Compris, fermer
               </button>
