@@ -273,14 +273,14 @@ function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 function PhoneMockup({ activeStep, isMobile = false }: { activeStep: number; isMobile?: boolean }) {
   const stepImages = [
-    { src: '/step_choisis.png', alt: 'Écran Névé — Choisis ta randonnée' },
-    { src: '/step_reserve.png', alt: 'Écran Névé — Réserve ton billet de train' },
-    { src: '/step_marche.png', alt: 'Écran Névé — Suis le tracé GPX en marchant' },
-    { src: '/step_rentre.png', alt: 'Écran Névé — Alerte retour pour ton train' },
+    { src: '/step_choisistrain.png', alt: 'Écran Névé — Choisis ta randonnée' },
+    { src: '/step_reservetrain.png', alt: 'Écran Névé — Réserve ton billet de train' },
+    { src: '/step_marchetrain.png', alt: 'Écran Névé — Suis le tracé GPX en marchant' },
+    { src: '/step_rentretrain.png', alt: 'Écran Névé — Alerte retour pour ton train' },
   ];
 
   return (
-    <div className={`relative w-[400px] h-[300px] rounded-3xl overflow-hidden shadow-xl select-none ${isMobile ? 'scale-95 sm:scale-100 origin-center' : ''}`}>
+    <div className={`relative w-[400px] h-[400px] rounded-3xl overflow-hidden shadow-xl select-none ${isMobile ? 'scale-95 sm:scale-100 origin-center' : ''}`}>
       {stepImages.map((img, i) => {
         const stepNum = i + 1;
         const isActive = activeStep === stepNum;
