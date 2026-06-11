@@ -271,7 +271,42 @@ function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
+function PhoneMockup({ activeStep, isMobile = false }: { activeStep: number; isMobile?: boolean }) {
+  const stepImages = [
+    { src: '/step_choisis.png', alt: 'Écran Névé — Choisis ta randonnée' },
+    { src: '/step_reserve.png', alt: 'Écran Névé — Réserve ton billet de train' },
+    { src: '/step_marche.png', alt: 'Écran Névé — Suis le tracé GPX en marchant' },
+    { src: '/step_rentre.png', alt: 'Écran Névé — Alerte retour pour ton train' },
+  ];
 
+  return (
+    <div className={`relative w-[400px] h-[300px] rounded-3xl overflow-hidden shadow-xl select-none ${isMobile ? 'scale-95 sm:scale-100 origin-center' : ''}`}>
+      {stepImages.map((img, i) => {
+        const stepNum = i + 1;
+        const isActive = activeStep === stepNum;
+        return (
+          <div
+            key={stepNum}
+            className={`absolute inset-0 transition-all duration-500 ${
+              isActive
+                ? 'opacity-100 scale-100 z-20'
+                : 'opacity-0 scale-95 z-10 pointer-events-none'
+            }`}
+          >
+            <Image
+              src={img.src}
+              alt={img.alt}
+              fill
+              className="object-cover object-top"
+              sizes="280px"
+              priority={stepNum === 1}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 interface HeroRouteStep {
   type: "walk" | "train" | "hike" | "return";
@@ -787,6 +822,49 @@ export default function Home() {
       scrollContainerRef.current.scrollTop = idx * cardHeight;
     }
   };
+
+  // --- TIMELINE STATES & REFS ---
+  const [activeStep, setActiveStep] = useState(1);
+  const journeySectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const section = journeySectionRef.current;
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const totalHeight = rect.height;
+      const viewportHeight = window.innerHeight;
+      const scrollableRange = totalHeight - viewportHeight;
+
+      if (scrollableRange <= 0) return;
+
+      const topOffset = -rect.top;
+      // Normalize progress between 0 and 1
+      const progress = Math.max(0, Math.min(1, topOffset / scrollableRange));
+
+      // Divide 0 to 1 into 4 step segments
+      if (progress < 0.25) {
+        setActiveStep(1);
+      } else if (progress < 0.5) {
+        setActiveStep(2);
+      } else if (progress < 0.75) {
+        setActiveStep(3);
+      } else {
+        setActiveStep(4);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    // Initialize
+    handleScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
 
   // Sync scroll top on index update (e.g. from reset)
   useEffect(() => {
@@ -1656,90 +1734,196 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2.3 THE USER JOURNEY (Step by Step) */}
-      <section id="journey" className="py-24 bg-neutral-50 border-b border-neutral-200">
+      {/* 2.3 THE USER JOURNEY (Step by Step) - Desktop Dynamic Scroll Pinning Timeline */}
+      <section ref={journeySectionRef} id="journey" className="hidden lg:block relative h-[320vh] bg-neutral-50 border-b border-neutral-200">
+        <div className="sticky top-0 h-screen w-full flex flex-col justify-center overflow-hidden">
+          <div className="max-w-7xl mx-auto px-6 w-full flex flex-col justify-center py-16">
+            
+            {/* Header */}
+            <div className="text-center max-w-3xl mx-auto space-y-4 shrink-0 mb-20">
+              <span className="text-xs font-black uppercase tracking-widest text-primary-700">
+                Comment ça marche
+              </span>
+              <h2 className="text-4xl font-black uppercase tracking-tight text-neutral-900 leading-tight">
+                Du canapé au sommet en 4 étapes
+              </h2>
+              <p className="text-neutral-600 text-sm font-normal max-w-2xl mx-auto leading-relaxed">
+                Tout se fait depuis ton téléphone. Tu choisis, tu réserves, tu marches, tu rentres.
+              </p>
+            </div>
+
+            {/* Desktop Three-Column Grid */}
+            <div className="grid grid-cols-12 gap-8 items-center relative">
+              
+              {/* Left Column: Phone Mockup */}
+              <div className="col-span-5 flex justify-end pr-10">
+                <PhoneMockup activeStep={activeStep} />
+              </div>
+
+              {/* Center Column: Timeline Line & Circle */}
+              <div className="col-span-2 relative flex flex-col items-center justify-start pt-8 h-[300px]">
+                
+                {/* Line above Circle (Faded) */}
+                <div className="w-[2px] h-14 border-l-2 border-dashed border-neutral-400 opacity-20 shrink-0" />
+
+                {/* Single active number circle */}
+                <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
+                  {[1, 2, 3, 4].map((stepNum) => {
+                    const isActive = activeStep === stepNum;
+                    return (
+                      <div 
+                        key={stepNum}
+                        className={`absolute w-12 h-12 rounded-full flex items-center justify-center font-black text-base transition-all duration-500 ${
+                          isActive 
+                            ? 'bg-primary-700 text-white scale-115 shadow-md ring-4 ring-primary-700/20 opacity-100 z-10' 
+                            : 'opacity-0 scale-90 z-0 pointer-events-none'
+                        }`}
+                      >
+                        {stepNum}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Line below Circle (Going all the way to the bottom of the screen) */}
+                <div className="absolute top-[140px] bottom-[-50vh] w-[2px] border-l-2 border-dashed border-neutral-400 opacity-100" />
+              </div>
+
+              {/* Right Column: Stacked Text Steps */}
+              <div className="col-span-5 relative h-[250px] flex items-center pl-10">
+                
+                {/* Step 1 Content */}
+                <div className={`absolute inset-x-0 transition-all duration-700 flex flex-col justify-center text-left ${
+                  activeStep === 1 
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+                    : 'opacity-0 translate-y-8 scale-95 pointer-events-none'
+                }`}>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary-700 mb-2">Étape 1</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-neutral-900 mb-4 font-extrabold">Choisis</h3>
+                  <p className="text-neutral-600 text-base leading-relaxed font-normal">
+                    Tape ta destination ou laisse Névé te suggérer la meilleure rando du jour selon la météo et les trains.
+                  </p>
+                </div>
+
+                {/* Step 2 Content */}
+                <div className={`absolute inset-x-0 transition-all duration-700 flex flex-col justify-center text-left ${
+                  activeStep === 2 
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+                    : 'opacity-0 translate-y-8 scale-95 pointer-events-none'
+                }`}>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary-700 mb-2">Étape 2</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-neutral-900 mb-4 font-extrabold">Réserve</h3>
+                  <p className="text-neutral-600 text-base leading-relaxed font-normal">
+                    Ton billet de train s'achète en 2 clics, directement dans l'appli. Navigo ou billet classique.
+                  </p>
+                </div>
+
+                {/* Step 3 Content */}
+                <div className={`absolute inset-x-0 transition-all duration-700 flex flex-col justify-center text-left ${
+                  activeStep === 3 
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+                    : 'opacity-0 translate-y-8 scale-95 pointer-events-none'
+                }`}>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary-700 mb-2">Étape 3</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-neutral-900 mb-4 font-extrabold">Marche</h3>
+                  <p className="text-neutral-600 text-base leading-relaxed font-normal">
+                    Suis le tracé GPX sur ton écran, même sans réseau. L'appli te guide du quai au sentier.
+                  </p>
+                </div>
+
+                {/* Step 4 Content */}
+                <div className={`absolute inset-x-0 transition-all duration-700 flex flex-col justify-center text-left ${
+                  activeStep === 4 
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+                    : 'opacity-0 translate-y-8 scale-95 pointer-events-none'
+                }`}>
+                  <span className="text-xs font-black uppercase tracking-widest text-primary-700 mb-2">Étape 4</span>
+                  <h3 className="text-3xl font-black uppercase tracking-tight text-neutral-900 mb-4 font-extrabold">Rentre</h3>
+                  <p className="text-neutral-600 text-base leading-relaxed font-normal">
+                    L'alerte retour se déclenche au bon moment. Tu reprends ton train, tu es chez toi pour le dîner.
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 2.3.1 THE USER JOURNEY (Step by Step) - Mobile/Tablet Responsive Flow */}
+      <section className="block lg:hidden py-20 bg-neutral-50 border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-6">
           {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <span className="text-xs font-black uppercase tracking-widest text-primary-700">
               Comment ça marche
             </span>
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-neutral-900 leading-tight">
+            <h2 className="text-3xl font-black uppercase tracking-tight text-neutral-900 leading-tight">
               Du canapé au sommet en 4 étapes
             </h2>
-            <p className="text-neutral-600 text-sm md:text-base font-normal max-w-2xl mx-auto leading-relaxed">
+            <p className="text-neutral-600 text-sm font-normal max-w-2xl mx-auto">
               Tout se fait depuis ton téléphone. Tu choisis, tu réserves, tu marches, tu rentres.
             </p>
           </div>
 
-          {/* Steps Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
-
-            {/* Connecting line for desktop (hidden on mobile) */}
-            <div className="hidden md:block absolute top-[52px] left-[12.5%] right-[12.5%] h-0.5 bg-neutral-200 z-0"></div>
-
+          {/* Mobile Linear Steps */}
+          <div className="space-y-16">
+            
             {/* Step 1 */}
-            <div className="relative z-10 flex flex-col items-center text-center group">
-              <div className="w-24 h-24 rounded-full bg-white border-4 border-neutral-100 flex items-center justify-center shadow-lg group-hover:scale-105 group-hover:border-primary-100 transition-all duration-300 relative">
-                <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-primary-700 text-white text-xs font-black flex items-center justify-center">
-                  1
-                </span>
-                <span className="text-3xl">🔍</span>
-              </div>
-              <h3 className="text-base font-black uppercase tracking-tight text-neutral-900 mt-6 mb-2">
-                Choisis
-              </h3>
-              <p className="text-xs text-neutral-600 leading-relaxed font-normal max-w-[220px]">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <span className="w-10 h-10 rounded-full bg-primary-700 text-white font-extrabold flex items-center justify-center text-sm shadow-sm">
+                1
+              </span>
+              <h3 className="text-xl font-black uppercase tracking-tight text-neutral-900">Choisis</h3>
+              <p className="text-neutral-600 text-xs sm:text-sm max-w-md">
                 Tape ta destination ou laisse Névé te suggérer la meilleure rando du jour selon la météo et les trains.
               </p>
+              <div className="pt-2">
+                <PhoneMockup activeStep={1} isMobile />
+              </div>
             </div>
 
             {/* Step 2 */}
-            <div className="relative z-10 flex flex-col items-center text-center group">
-              <div className="w-24 h-24 rounded-full bg-white border-4 border-neutral-100 flex items-center justify-center shadow-lg group-hover:scale-105 group-hover:border-primary-100 transition-all duration-300 relative">
-                <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-primary-700 text-white text-xs font-black flex items-center justify-center">
-                  2
-                </span>
-                <span className="text-3xl">🎫</span>
-              </div>
-              <h3 className="text-base font-black uppercase tracking-tight text-neutral-900 mt-6 mb-2">
-                Réserve
-              </h3>
-              <p className="text-xs text-neutral-600 leading-relaxed font-normal max-w-[220px]">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <span className="w-10 h-10 rounded-full bg-primary-700 text-white font-extrabold flex items-center justify-center text-sm shadow-sm">
+                2
+              </span>
+              <h3 className="text-xl font-black uppercase tracking-tight text-neutral-900">Réserve</h3>
+              <p className="text-neutral-600 text-xs sm:text-sm max-w-md">
                 Ton billet de train s'achète en 2 clics, directement dans l'appli. Navigo ou billet classique.
               </p>
+              <div className="pt-2">
+                <PhoneMockup activeStep={2} isMobile />
+              </div>
             </div>
 
             {/* Step 3 */}
-            <div className="relative z-10 flex flex-col items-center text-center group">
-              <div className="w-24 h-24 rounded-full bg-white border-4 border-neutral-100 flex items-center justify-center shadow-lg group-hover:scale-105 group-hover:border-primary-100 transition-all duration-300 relative">
-                <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-primary-700 text-white text-xs font-black flex items-center justify-center">
-                  3
-                </span>
-                <span className="text-3xl">🥾</span>
-              </div>
-              <h3 className="text-base font-black uppercase tracking-tight text-neutral-900 mt-6 mb-2">
-                Marche
-              </h3>
-              <p className="text-xs text-neutral-600 leading-relaxed font-normal max-w-[220px]">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <span className="w-10 h-10 rounded-full bg-primary-700 text-white font-extrabold flex items-center justify-center text-sm shadow-sm">
+                3
+              </span>
+              <h3 className="text-xl font-black uppercase tracking-tight text-neutral-900">Marche</h3>
+              <p className="text-neutral-600 text-xs sm:text-sm max-w-md">
                 Suis le tracé GPX sur ton écran, même sans réseau. L'appli te guide du quai au sentier.
               </p>
+              <div className="pt-2">
+                <PhoneMockup activeStep={3} isMobile />
+              </div>
             </div>
 
             {/* Step 4 */}
-            <div className="relative z-10 flex flex-col items-center text-center group">
-              <div className="w-24 h-24 rounded-full bg-white border-4 border-neutral-100 flex items-center justify-center shadow-lg group-hover:scale-105 group-hover:border-primary-100 transition-all duration-300 relative">
-                <span className="absolute -top-1 -right-1 w-7 h-7 rounded-full bg-primary-700 text-white text-xs font-black flex items-center justify-center">
-                  4
-                </span>
-                <span className="text-3xl">🍽️</span>
-              </div>
-              <h3 className="text-base font-black uppercase tracking-tight text-neutral-900 mt-6 mb-2">
-                Rentre
-              </h3>
-              <p className="text-xs text-neutral-600 leading-relaxed font-normal max-w-[220px]">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <span className="w-10 h-10 rounded-full bg-primary-700 text-white font-extrabold flex items-center justify-center text-sm shadow-sm">
+                4
+              </span>
+              <h3 className="text-xl font-black uppercase tracking-tight text-neutral-900">Rentre</h3>
+              <p className="text-neutral-600 text-xs sm:text-sm max-w-md">
                 L'alerte retour se déclenche au bon moment. Tu reprends ton train, tu es chez toi pour le dîner.
               </p>
+              <div className="pt-2">
+                <PhoneMockup activeStep={4} isMobile />
+              </div>
             </div>
 
           </div>
