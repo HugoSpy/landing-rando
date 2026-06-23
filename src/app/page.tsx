@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { FaApple } from "react-icons/fa";
+import { IoLogoGooglePlaystore } from "react-icons/io5";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 // --- CUSTOM INLINE SVG ICONS ---
@@ -267,32 +270,6 @@ function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
       <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-    </svg>
-  );
-}
-
-function AppleStoreIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
-      viewBox="0 0 170 170"
-      className={className}
-    >
-      <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.37.13-9.13-1.9-14.34-6.08-3.47-2.82-7.38-7.53-11.72-14.13-7.53-11.37-13.13-25.21-16.79-41.52-3.66-16.32-5.5-30.82-5.5-43.51 0-14.88 3.53-26.89 10.6-36.03 7.07-9.13 15.93-13.79 26.57-13.97 5.59 0 11.29 1.63 17.1 4.88 5.8 3.26 10.11 4.88 12.92 4.88 2.35 0 6.44-1.57 12.28-4.71 5.83-3.14 11.45-4.66 16.85-4.57 12.97.23 23.47 5.09 31.48 14.58-13.41 8.24-19.98 19.34-19.7 33.31.29 10.8 4.3 19.73 12.02 26.79 7.73 7.07 16.88 10.9 27.46 11.51-3.23 9.77-7.79 19.26-13.68 28.47zM119.22 32.74c0-7.85 2.8-15.12 8.41-21.8C133.25 4.26 140.67 0 149.88 0c.1 1.05.15 2.02.15 2.91 0 7.51-2.92 14.88-8.77 22.09-5.85 7.22-13.23 11.31-22.14 12.26-.2-1.55-.3-3.07-.3-4.52z" />
-    </svg>
-  );
-}
-
-function PlayStoreIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
-      viewBox="0 0 512 512"
-      className={className}
-    >
-      <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58 33.3-60.1-60.1 62.5-35.7c16.7-9.6 27.2-2.2 27.2 11.7v40.4c0 13.9-10.5 21.3-31.6 10.4zM325.3 277.7l60.1 60.1L104.6 499l220.7-221.3z" />
     </svg>
   );
 }
@@ -1011,6 +988,80 @@ export default function Home() {
       window.removeEventListener("resize", handleDownloadScroll);
     };
   }, []);
+
+  // --- DOWNLOAD SECTION: scroll-driven traveling assets (Framer Motion) ---
+  const scrollParentRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const phoneRef0 = useRef<HTMLDivElement>(null);
+  const phoneRef1 = useRef<HTMLDivElement>(null);
+  const phoneRef2 = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  // Gating anti-hydratation : 1er rendu client identique au serveur (reduceActive=false),
+  // la préférence reduced-motion ne s'applique qu'après le mount.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const reduceActive = mounted ? !!reduce : false;
+  const { scrollYProgress } = useScroll({ target: scrollParentRef, offset: ["start start", "end end"] });
+
+  const [pts, setPts] = useState([
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+  ]);
+  const [measured, setMeasured] = useState(false);
+  const [isVertical, setIsVertical] = useState(false);
+
+  useEffect(() => {
+    const measure = () => {
+      const stage = stageRef.current;
+      const r0 = phoneRef0.current;
+      const r1 = phoneRef1.current;
+      const r2 = phoneRef2.current;
+      if (!stage || !r0 || !r1 || !r2) return;
+      const s = stage.getBoundingClientRect();
+      const center = (el: HTMLElement) => {
+        const b = el.getBoundingClientRect();
+        return { x: b.left - s.left + b.width / 2, y: b.top - s.top + b.height / 2 };
+      };
+      const p = [center(r0), center(r1), center(r2)];
+      setPts(p);
+      setIsVertical(Math.abs(p[2].x - p[0].x) < Math.abs(p[2].y - p[0].y));
+      setMeasured(true);
+    };
+    measure();
+    const t = setTimeout(measure, 300);
+    window.addEventListener("resize", measure);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  const stageW = stageRef.current?.clientWidth ?? 1024;
+  const [P0, P1, P2] = pts;
+  const arc = isVertical ? 60 : 80;
+  const trainEndX = Math.min(P2.x + stageW * 0.16, stageW - 60);
+
+  // Act 1 — city_pass : P0 -> P1
+  const cpO = useTransform(scrollYProgress, [0, 0.01, 0.3, 0.33], [0, 1, 1, 0]);
+  const cpS = useTransform(scrollYProgress, [0, 0.165, 0.3, 0.33], [1, 1.15, 1, 0.5]);
+  const cpR = useTransform(scrollYProgress, [0, 0.33], [-15, 15]);
+  const cpX = useTransform(scrollYProgress, [0, 0.165, 0.33], isVertical ? [P0.x, (P0.x + P1.x) / 2 - arc, P1.x] : [P0.x, (P0.x + P1.x) / 2, P1.x]);
+  const cpY = useTransform(scrollYProgress, [0, 0.165, 0.33], isVertical ? [P0.y, (P0.y + P1.y) / 2, P1.y] : [P0.y, (P0.y + P1.y) / 2 - arc, P1.y]);
+
+  // Act 2 — hiker : P1 -> P2
+  const hkO = useTransform(scrollYProgress, [0.33, 0.34, 0.63, 0.66], [0, 1, 1, 0]);
+  const hkS = useTransform(scrollYProgress, [0.33, 0.495, 0.63, 0.66], [1, 1.15, 1, 0.5]);
+  const hkR = useTransform(scrollYProgress, [0.33, 0.66], [-15, 15]);
+  const hkX = useTransform(scrollYProgress, [0.33, 0.495, 0.66], isVertical ? [P1.x, (P1.x + P2.x) / 2 - arc, P2.x] : [P1.x, (P1.x + P2.x) / 2, P2.x]);
+  const hkY = useTransform(scrollYProgress, [0.33, 0.495, 0.66], isVertical ? [P1.y, (P1.y + P2.y) / 2, P2.y] : [P1.y, (P1.y + P2.y) / 2 - arc, P2.y]);
+
+  // Act 3 — train : P2 -> droite de P2 (reste visible à la fin)
+  const trO = useTransform(scrollYProgress, [0.66, 0.67, 1], [0, 1, 1]);
+  const trS = useTransform(scrollYProgress, [0.66, 0.83, 1], [0.6, 1.1, 1]);
+  const trR = useTransform(scrollYProgress, [0.66, 1], [15, 0]);
+  const trX = useTransform(scrollYProgress, [0.66, 1], [P2.x, trainEndX]);
+  const trY = useTransform(scrollYProgress, [0.66, 0.83, 1], [P2.y, P2.y - 40, P2.y]);
 
   // --- HIDE NAVBAR SCROLL EFFECT FOR TIMELINE AND DOWNLOAD SECTIONS ---
   const [hideNavbar, setHideNavbar] = useState(false);
@@ -2346,8 +2397,8 @@ export default function Home() {
       </section>
 
       {/* [NEW SECTION] 5.0.1 INTERACTIVE APP DOWNLOAD SECTION (Duolingo style) */}
-      <section ref={downloadSectionRef} id="download" className="py-24 bg-primary-50 border-b border-neutral-200 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 text-center flex flex-col items-center">
+      <section ref={downloadSectionRef} id="download" className="bg-primary-50 border-b border-neutral-200">
+        <div className="max-w-7xl mx-auto px-6 pt-24 pb-12 text-center flex flex-col items-center">
           
           {/* Header (Centered) */}
           <div className="max-w-3xl mx-auto space-y-4 mb-12">
@@ -2361,31 +2412,34 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => alert("L'application iOS sera disponible très bientôt sur l'App Store ! Nous vous enverrons un e-mail dès sa sortie.")}
-                className="inline-flex items-center gap-3 bg-white hover:bg-neutral-50 text-neutral-900 px-5 py-2 rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-neutral-200"
+                className="inline-flex items-center gap-4 bg-neutral-900 hover:bg-black text-white px-8 py-4 rounded-2xl shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                <AppleStoreIcon className="w-5 h-5 fill-current text-black" />
+                <FaApple className="w-9 h-9" />
                 <div className="text-left">
-                  <p className="text-[8px] uppercase tracking-wider text-neutral-500 font-semibold leading-none">Télécharger dans l'</p>
-                  <p className="text-[11px] font-bold text-neutral-800 leading-tight mt-0.5">App Store</p>
+                  <p className="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold leading-none">Télécharger dans l'</p>
+                  <p className="text-lg font-bold text-white leading-tight mt-0.5">App Store</p>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => alert("L'application Android sera disponible très bientôt sur le Google Play Store ! Nous vous enverrons un e-mail dès sa sortie.")}
-                className="inline-flex items-center gap-3 bg-white hover:bg-neutral-50 text-neutral-900 px-5 py-2 rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-neutral-200"
+                className="inline-flex items-center gap-4 bg-neutral-900 hover:bg-black text-white px-8 py-4 rounded-2xl shadow-md transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                <PlayStoreIcon className="w-5 h-5 text-black" />
+                <IoLogoGooglePlaystore className="w-9 h-9" />
                 <div className="text-left">
-                  <p className="text-[8px] uppercase tracking-wider text-neutral-500 font-semibold leading-none">Disponible sur</p>
-                  <p className="text-[11px] font-bold text-neutral-800 leading-tight mt-0.5">Google Play</p>
+                  <p className="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold leading-none">Disponible sur</p>
+                  <p className="text-lg font-bold text-white leading-tight mt-0.5">Google Play</p>
                 </div>
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Interactive Animation Showcase Container */}
-          <div className="w-full max-w-5xl h-[480px] md:h-[540px] relative mt-12 overflow-visible select-none">
+        {/* Scroll-driven sticky showcase */}
+        <div ref={scrollParentRef} className="relative h-[200vh] md:h-[300vh]">
+          <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+            <div ref={stageRef} className="relative w-full max-w-5xl h-[480px] md:h-[540px] mx-auto px-6 select-none">
             
             {/* Background elements */}
             <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
@@ -2442,295 +2496,48 @@ export default function Home() {
               style={{ transform: `translateY(${downloadProgress * 30}px) rotate(-12deg)` }}
             />
 
-            {/* Phone 1 Container (Left - Pass Navigo enters) */}
-            <div className="absolute left-[5%] md:left-[15%] top-[45%] -translate-y-1/2 scale-[0.9] md:scale-100 z-10 flex flex-col items-center">
-              <div className="animate-float-slow flex flex-col items-center">
-                <div className="w-[145px] h-[280px] md:w-[170px] h-[330px] relative -rotate-12">
-                  <img 
-                    src="/tel.png" 
-                    className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none drop-shadow-2xl" 
-                    alt="Téléphone 1" 
-                  />
-                  <div className="absolute inset-[4.5%] rounded-[24px] overflow-hidden bg-[#EEF7F2] z-10 border border-neutral-200/50 flex flex-col items-center justify-between p-3">
-                    <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(#000000 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
-                    <span className="text-[7px] font-black text-primary-700/60 tracking-widest uppercase mt-4 relative z-20">1. PASS NAVIGO</span>
-                    <div className="w-full bg-primary-950/5 rounded-lg p-1.5 space-y-1 relative z-20 mb-2 text-center flex flex-col items-center">
-                      <div className="w-3/4 h-1.5 bg-primary-950/15 rounded mb-1" />
-                      <div className="w-1/2 h-1 bg-primary-950/10 rounded" />
-                    </div>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">1. CONNECTER</span>
+            {/* 3 phones (refs pour mesurer les trajectoires) */}
+            <div ref={phoneRef0} className="absolute left-[5%] md:left-[15%] top-[45%] -translate-y-1/2 scale-[0.9] md:scale-100 z-10">
+              <div className={`${reduceActive ? "" : "animate-float-slow"} w-[150px] h-[300px] md:w-[170px] md:h-[330px] relative`}>
+                <img src="/phone.webp" className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none" alt="Application Névé" />
+              </div>
+            </div>
+            <div ref={phoneRef1} className="absolute left-[50%] -translate-x-1/2 top-[55%] -translate-y-1/2 scale-[0.95] md:scale-105 z-10">
+              <div className={`${reduceActive ? "" : "animate-float-medium"} w-[150px] h-[300px] md:w-[170px] md:h-[330px] relative`}>
+                <img src="/phone.webp" className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none" alt="Application Névé" />
+              </div>
+            </div>
+            <div ref={phoneRef2} className="absolute right-[5%] md:right-[15%] top-[45%] -translate-y-1/2 scale-[0.9] md:scale-100 z-10">
+              <div className={`${reduceActive ? "" : "animate-float-fast"} w-[150px] h-[300px] md:w-[170px] md:h-[330px] relative`}>
+                <img src="/phone.webp" className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none" alt="Application Névé" />
               </div>
             </div>
 
-            {/* Pass Navigo scroll-animated element */}
-            {(() => {
-              const passProgress = Math.max(0, Math.min(1, downloadProgress / 0.35));
-              
-              // 0.0 to 0.7: Fly in from left (-350px) to center (0px)
-              // 0.7 to 1.0: Go inside the phone (scale down, translate down, fade out)
-              let x = 0;
-              let y = 0;
-              let scale = 1;
-              let opacity = 0;
-              let rotation = -12;
-              
-              if (passProgress < 0.7) {
-                const t = passProgress / 0.7; // 0 to 1
-                x = (t - 1) * 350; // starts at -350px, ends at 0px
-                y = Math.sin(t * Math.PI) * -45; // arc path
-                scale = 0.5 + t * 0.4; // starts at 0.5, ends at 0.9
-                opacity = Math.min(1, t * 3.3); // fades in quickly
-                rotation = -40 + t * 28; // rotates to -12deg
-              } else {
-                const t = (passProgress - 0.7) / 0.3; // 0 to 1
-                x = 0;
-                y = t * 25; // slides down into phone
-                scale = 0.9 - t * 0.6; // shrinks to 0.3
-                opacity = 1 - t; // fades out
-                rotation = -12;
-              }
-              
-              return (
-                <div 
-                  className="absolute left-[5%] md:left-[15%] top-[45%] -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center"
-                  style={{
-                    transform: `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotation}deg)`,
-                    opacity: opacity,
-                    width: '145px',
-                    height: '280px',
-                    left: 'calc(15% + 12px)'
-                  }}
-                >
-                  <div className="animate-float-slow">
-                    <img 
-                      src="/pass.png" 
-                      className="w-16 h-24 md:w-20 md:h-28 object-contain drop-shadow-xl" 
-                      alt="Pass Navigo" 
-                    />
-                  </div>
-                </div>
-              );
-            })()}
+            {/* Assets voyageurs (scroll-driven) */}
+            {!reduceActive && (
+              <>
+                <motion.div className="absolute top-0 left-0 z-20 pointer-events-none" style={{ x: cpX, y: cpY, opacity: cpO, scale: cpS, rotate: cpR }}>
+                  <img src="/city_pass.webp" alt="" className="w-24 md:w-32 -translate-x-1/2 -translate-y-1/2 drop-shadow-xl" />
+                </motion.div>
+                <motion.div className="absolute top-0 left-0 z-20 pointer-events-none" style={{ x: hkX, y: hkY, opacity: hkO, scale: hkS, rotate: hkR }}>
+                  <img src="/hiker.webp" alt="" className="w-24 md:w-32 -translate-x-1/2 -translate-y-1/2 drop-shadow-xl" />
+                </motion.div>
+                <motion.div className="absolute top-0 left-0 z-20 pointer-events-none" style={{ x: trX, y: trY, opacity: trO, scale: trS, rotate: trR }}>
+                  <img src="/train.webp" alt="" className="w-28 md:w-36 -translate-x-1/2 -translate-y-1/2 drop-shadow-xl" />
+                </motion.div>
+              </>
+            )}
 
-            {/* Phone 2 & Train Showcase (Center) */}
-            <div className="absolute left-[50%] -translate-x-1/2 top-[55%] -translate-y-1/2 scale-[0.95] md:scale-105 z-20 flex flex-col items-center">
-              {(() => {
-                const trainProgress = Math.max(0, Math.min(1, (downloadProgress - 0.30) / 0.35));
-                
-                // Phone 2 animation (morph out)
-                let phoneScale = 1;
-                let phoneOpacity = 1;
-                let phoneRotate = 6;
-                let phoneY = 0;
-                
-                if (trainProgress < 0.55) {
-                  const t = trainProgress / 0.55; // 0 to 1
-                  phoneScale = 1 - t;
-                  phoneOpacity = 1 - t;
-                  phoneRotate = 6 - t * 36; // 6deg to -30deg
-                  phoneY = t * 40;
-                } else {
-                  phoneScale = 0;
-                  phoneOpacity = 0;
-                  phoneRotate = -30;
-                  phoneY = 40;
-                }
-                
-                // Train animation (morph in and slide)
-                let trainScale = 0;
-                let trainOpacity = 0;
-                let trainRotate = 30;
-                let trainX = 0;
-                let trainY = 0;
-                
-                if (trainProgress > 0 && trainProgress < 0.55) {
-                  const t = trainProgress / 0.55; // 0 to 1
-                  trainScale = t * 1.2;
-                  trainOpacity = t;
-                  trainRotate = 30 - t * 35; // 30deg to -5deg
-                  trainX = 0;
-                  trainY = 0;
-                } else if (trainProgress >= 0.55) {
-                  const t = (trainProgress - 0.55) / 0.45; // 0 to 1
-                  trainScale = 1.2 - t * 0.2; // settles back to 1.0
-                  trainOpacity = 1;
-                  trainRotate = -5 + t * 5; // settles to 0deg
-                  trainX = t * 30; // glides forward
-                  trainY = t * -30;
-                }
-                
-                return (
-                  <div className="relative w-[145px] h-[280px] md:w-[170px] h-[330px] flex items-center justify-center">
-                    {/* Phone 2 Visual */}
-                    {phoneOpacity > 0 && (
-                      <div 
-                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75"
-                        style={{
-                          transform: `translateY(${phoneY}px) scale(${phoneScale}) rotate(${phoneRotate}deg)`,
-                          opacity: phoneOpacity
-                        }}
-                      >
-                        <div className="animate-float-medium w-full h-full relative">
-                          <img 
-                            src="/tel.png" 
-                            className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none drop-shadow-2xl" 
-                            alt="Téléphone 2" 
-                          />
-                          <div className="absolute inset-[4.5%] rounded-[24px] overflow-hidden bg-[#EEF7F2] z-10 border border-neutral-200/50 flex flex-col items-center justify-between p-3">
-                            <div className="absolute bottom-0 inset-x-0 h-16 bg-primary-700/10 rounded-t-full opacity-60" />
-                            <span className="text-[7px] font-black text-primary-700/60 tracking-widest uppercase mt-4 relative z-20">2. RÉSERVATION</span>
-                            <div className="w-full bg-primary-950/5 rounded-lg p-1.5 space-y-1 relative z-20 mb-2">
-                              <div className="w-2/3 h-1 bg-primary-950/15 rounded" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Train Visual */}
-                    {trainOpacity > 0 && (
-                      <div 
-                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75 animate-float-medium"
-                        style={{
-                          transform: `translate(${trainX}px, ${trainY}px) scale(${trainScale}) rotate(${trainRotate}deg)`,
-                          opacity: trainOpacity
-                        }}
-                      >
-                        <div className="flex flex-col items-center">
-                          <img 
-                            src="/train.png" 
-                            className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl" 
-                            alt="Train" 
-                          />
-                          <span className="text-[10px] font-bold text-primary-900 uppercase tracking-widest mt-2 bg-primary-100/90 px-3 py-1 rounded-full border border-primary-200 shadow-sm">
-                            Le Train 🚄
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">2. DÉCOLLER</span>
+            {/* Reduced-motion : tableau statique final */}
+            {reduceActive && measured && (
+              <>
+                <img src="/city_pass.webp" alt="" style={{ left: P1.x, top: P1.y }} className="absolute w-24 md:w-32 -translate-x-1/2 -translate-y-1/2 z-20 drop-shadow-xl" />
+                <img src="/hiker.webp" alt="" style={{ left: P2.x, top: P2.y }} className="absolute w-24 md:w-32 -translate-x-1/2 -translate-y-1/2 z-20 drop-shadow-xl" />
+                <img src="/train.webp" alt="" style={{ left: trainEndX, top: P2.y }} className="absolute w-28 md:w-36 -translate-x-1/2 -translate-y-1/2 z-20 drop-shadow-xl" />
+              </>
+            )}
+
             </div>
-
-            {/* Phone 3 & Hiker Showcase (Right) */}
-            <div className="absolute right-[5%] md:right-[15%] top-[45%] -translate-y-1/2 scale-[0.9] md:scale-100 z-10 flex flex-col items-center">
-              {(() => {
-                const hikerProgress = Math.max(0, Math.min(1, (downloadProgress - 0.60) / 0.35));
-                
-                // Phone 3 animation (morph out)
-                let phoneScale = 1;
-                let phoneOpacity = 1;
-                let phoneRotate = -6;
-                let phoneY = 0;
-                
-                if (hikerProgress < 0.55) {
-                  const t = hikerProgress / 0.55; // 0 to 1
-                  phoneScale = 1 - t;
-                  phoneOpacity = 1 - t;
-                  phoneRotate = -6 + t * 36; // -6deg to 30deg
-                  phoneY = t * 40;
-                } else {
-                  phoneScale = 0;
-                  phoneOpacity = 0;
-                  phoneRotate = 30;
-                  phoneY = 40;
-                }
-                
-                // Hiker animation (morph in and slide)
-                let hikerScale = 0;
-                let hikerOpacity = 0;
-                let hikerRotate = -30;
-                let hikerX = 0;
-                let hikerY = 0;
-                
-                if (hikerProgress > 0 && hikerProgress < 0.55) {
-                  const t = hikerProgress / 0.55; // 0 to 1
-                  hikerScale = t * 1.2;
-                  hikerOpacity = t;
-                  hikerRotate = -30 + t * 35; // -30deg to 5deg
-                  hikerX = 0;
-                  hikerY = 0;
-                } else if (hikerProgress >= 0.55) {
-                  const t = (hikerProgress - 0.55) / 0.45; // 0 to 1
-                  hikerScale = 1.2 - t * 0.2; // settles to 1.0
-                  hikerOpacity = 1;
-                  hikerRotate = 5 - t * 5; // settles to 0deg
-                  hikerX = t * 30; // glides forward
-                  hikerY = t * -30;
-                }
-                
-                const bubbleScale = hikerProgress > 0.75 ? Math.min(1, (hikerProgress - 0.75) / 0.2) : 0;
-                
-                return (
-                  <div className="relative w-[145px] h-[280px] md:w-[170px] h-[330px] flex items-center justify-center">
-                    {/* Phone 3 Visual */}
-                    {phoneOpacity > 0 && (
-                      <div 
-                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75"
-                        style={{
-                          transform: `translateY(${phoneY}px) scale(${phoneScale}) rotate(${phoneRotate}deg)`,
-                          opacity: phoneOpacity
-                        }}
-                      >
-                        <div className="animate-float-fast w-full h-full relative">
-                          <img 
-                            src="/tel.png" 
-                            className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none drop-shadow-2xl" 
-                            alt="Téléphone 3" 
-                          />
-                          <div className="absolute inset-[4.5%] rounded-[24px] overflow-hidden bg-[#EEF7F2] z-10 border border-neutral-200/50 flex flex-col items-center justify-between p-3">
-                            <span className="text-[7px] font-black text-primary-700/60 tracking-widest uppercase mt-4 relative z-20">3. AVENTURE</span>
-                            <div className="w-full bg-primary-950/5 rounded-lg p-1.5 space-y-1 relative z-20 mb-2">
-                              <div className="w-1/2 h-1 bg-primary-950/15 rounded" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Hiker Visual */}
-                    {hikerOpacity > 0 && (
-                      <div 
-                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75 animate-float-fast"
-                        style={{
-                          transform: `translate(${hikerX}px, ${hikerY}px) scale(${hikerScale}) rotate(${hikerRotate}deg)`,
-                          opacity: hikerOpacity
-                        }}
-                      >
-                        <div className="flex flex-col items-center relative">
-                          <img 
-                            src="/randonneur.png" 
-                            className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl" 
-                            alt="Randonneur" 
-                          />
-                          
-                          {/* Speech bubble "C'est parti !" */}
-                          <div 
-                            className="absolute -top-10 -right-16 bg-white border-2 border-primary-700 rounded-2xl px-3 py-1.5 text-[10px] font-black text-primary-900 shadow-lg uppercase tracking-wider transition-all duration-300 z-40"
-                            style={{
-                              transform: `scale(${bubbleScale})`,
-                              transformOrigin: 'bottom left'
-                            }}
-                          >
-                            C'est parti ! 🌲
-                          </div>
-                          
-                          <span className="text-[10px] font-bold text-primary-900 uppercase tracking-widest mt-2 bg-primary-100/90 px-3 py-1 rounded-full border border-primary-200 shadow-sm">
-                            Le Randonneur 🥾
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">3. CRAPAHUTER</span>
-            </div>
-
           </div>
         </div>
       </section>
@@ -3162,6 +2969,7 @@ export default function Home() {
                     onClick={() => setBookDownloadMsg("L'application iOS sera disponible très bientôt sur l'App Store ! Nous vous enverrons un e-mail dès sa sortie.")}
                     className="w-full py-3.5 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
+                    <FaApple className="w-4 h-4" />
                     <span>Télécharger sur l'App Store</span>
                   </button>
                   <button
@@ -3169,6 +2977,7 @@ export default function Home() {
                     onClick={() => setBookDownloadMsg("L'application Android sera disponible très bientôt sur le Google Play Store ! Nous vous enverrons un e-mail dès sa sortie.")}
                     className="w-full py-3.5 bg-white border border-primary-200 hover:bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
+                    <IoLogoGooglePlaystore className="w-4 h-4" />
                     <span>Télécharger sur Google Play</span>
                   </button>
 
