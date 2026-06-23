@@ -271,6 +271,124 @@ function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
+function AppleStoreIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      viewBox="0 0 170 170"
+      className={className}
+    >
+      <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.37.13-9.13-1.9-14.34-6.08-3.47-2.82-7.38-7.53-11.72-14.13-7.53-11.37-13.13-25.21-16.79-41.52-3.66-16.32-5.5-30.82-5.5-43.51 0-14.88 3.53-26.89 10.6-36.03 7.07-9.13 15.93-13.79 26.57-13.97 5.59 0 11.29 1.63 17.1 4.88 5.8 3.26 10.11 4.88 12.92 4.88 2.35 0 6.44-1.57 12.28-4.71 5.83-3.14 11.45-4.66 16.85-4.57 12.97.23 23.47 5.09 31.48 14.58-13.41 8.24-19.98 19.34-19.7 33.31.29 10.8 4.3 19.73 12.02 26.79 7.73 7.07 16.88 10.9 27.46 11.51-3.23 9.77-7.79 19.26-13.68 28.47zM119.22 32.74c0-7.85 2.8-15.12 8.41-21.8C133.25 4.26 140.67 0 149.88 0c.1 1.05.15 2.02.15 2.91 0 7.51-2.92 14.88-8.77 22.09-5.85 7.22-13.23 11.31-22.14 12.26-.2-1.55-.3-3.07-.3-4.52z" />
+    </svg>
+  );
+}
+
+function PlayStoreIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      viewBox="0 0 512 512"
+      className={className}
+    >
+      <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58 33.3-60.1-60.1 62.5-35.7c16.7-9.6 27.2-2.2 27.2 11.7v40.4c0 13.9-10.5 21.3-31.6 10.4zM325.3 277.7l60.1 60.1L104.6 499l220.7-221.3z" />
+    </svg>
+  );
+}
+
+function HikerSvg({ className = "w-full h-full" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+      {/* Backpack */}
+      <rect x="25" y="32" width="22" height="34" rx="6" fill="#445E2D" />
+      <rect x="22" y="38" width="8" height="22" rx="3" fill="#394C28" />
+      {/* Body / Torso */}
+      <path d="M40 38H60C64 38 66 42 65 47L58 72H43L40 47C39 42 41 38 40 38Z" fill="#719A48" />
+      {/* Straps */}
+      <rect x="42" y="38" width="4" height="20" rx="1" fill="#E5EFD8" />
+      <rect x="54" y="38" width="4" height="20" rx="1" fill="#E5EFD8" />
+      {/* Head */}
+      <circle cx="50" cy="22" r="12" fill="#F4F8ED" stroke="#445E2D" strokeWidth="2.5" />
+      {/* Cap */}
+      <path d="M38 20C38 13.5 43.5 9 50 9C56.5 9 62 13.5 62 20H38Z" fill="#394C28" />
+      <path d="M50 9C56 9 65 11 67 15H50V9Z" fill="#445E2D" />
+      {/* Face details */}
+      <circle cx="53" cy="21" r="1.5" fill="#394C28" />
+      <path d="M50 25C51.5 26.5 54 26.5 55 25" stroke="#394C28" strokeWidth="2" strokeLinecap="round" />
+      {/* Legs & Boots */}
+      <path d="M45 72V86H39" stroke="#445E2D" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M39 86H34V91H45V86" fill="#394C28" />
+      <path d="M56 72V84H65" stroke="#445E2D" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M65 84H71V89H60V84" fill="#394C28" />
+      {/* Walking Stick */}
+      <line x1="68" y1="40" x2="68" y2="92" stroke="#8FB566" strokeWidth="3.5" strokeLinecap="round" />
+      <circle cx="68" cy="40" r="3" fill="#394C28" />
+    </svg>
+  );
+}
+
+function TrainSvg({ className = "w-full h-full" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 120 60" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+      {/* Main Train Body */}
+      <path d="M5 45V15C5 12 8 8 16 8H100C110 8 115 15 115 25V45H5Z" fill="#719A48" />
+      {/* Bottom Chassis */}
+      <rect x="2" y="45" width="116" height="6" rx="2" fill="#394C28" />
+      {/* Wheels */}
+      <circle cx="20" cy="53" r="5" fill="#182310" />
+      <circle cx="35" cy="53" r="5" fill="#182310" />
+      <circle cx="85" cy="53" r="5" fill="#182310" />
+      <circle cx="100" cy="53" r="5" fill="#182310" />
+      {/* Windshield */}
+      <path d="M100 12H110C113 12 114 15 114 20V28H98L100 12Z" fill="#E5EFD8" stroke="#394C28" strokeWidth="1.5" />
+      {/* Passenger Windows */}
+      <rect x="15" y="14" width="16" height="12" rx="2" fill="#E5EFD8" />
+      <rect x="36" y="14" width="16" height="12" rx="2" fill="#E5EFD8" />
+      <rect x="57" y="14" width="16" height="12" rx="2" fill="#E5EFD8" />
+      <rect x="78" y="14" width="16" height="12" rx="2" fill="#E5EFD8" />
+      {/* Lights */}
+      <circle cx="112" cy="38" r="3.5" fill="#FFF" />
+      {/* Sleek Line Accent */}
+      <rect x="5" y="34" width="90" height="3" fill="#E5EFD8" />
+    </svg>
+  );
+}
+
+function FloatingBadge3D({ 
+  emoji, 
+  bgColor, 
+  borderColor, 
+  className = "", 
+  style = {},
+  floatSpeed = "slow"
+}: { 
+  emoji: string; 
+  bgColor: string; 
+  borderColor: string; 
+  className?: string; 
+  style?: React.CSSProperties;
+  floatSpeed?: "slow" | "medium" | "fast";
+}) {
+  const floatClass = floatSpeed === "slow" 
+    ? "animate-float-slow" 
+    : floatSpeed === "medium" 
+      ? "animate-float-medium" 
+      : "animate-float-fast";
+
+  return (
+    <div 
+      className={`absolute select-none pointer-events-none transition-all duration-100 ease-out z-30 ${className}`}
+      style={style}
+    >
+      <div className={`w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-xl md:text-2xl border-b-4 shadow-md ${bgColor} ${borderColor} ${floatClass}`}>
+        {emoji}
+      </div>
+    </div>
+  );
+}
+
+
 function PhoneMockup({ activeStep, isMobile = false }: { activeStep: number; isMobile?: boolean }) {
   const stepImages = [
     { src: '/step_choisistrain.png', alt: 'Écran Névé — Choisis ta randonnée' },
@@ -866,6 +984,70 @@ export default function Home() {
     };
   }, []);
 
+  // --- DOWNLOAD SECTION INTERACTIVE SCROLL ---
+  const [downloadProgress, setDownloadProgress] = useState(0.5); // Default to center if not scrolled yet
+  const downloadSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleDownloadScroll = () => {
+      const section = downloadSectionRef.current;
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const elementHeight = rect.height;
+      const totalRange = elementHeight + viewportHeight;
+      const topOffset = viewportHeight - rect.top;
+      const progress = Math.max(0, Math.min(1, topOffset / totalRange));
+      setDownloadProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleDownloadScroll, { passive: true });
+    window.addEventListener("resize", handleDownloadScroll);
+    handleDownloadScroll();
+
+    return () => {
+      window.removeEventListener("scroll", handleDownloadScroll);
+      window.removeEventListener("resize", handleDownloadScroll);
+    };
+  }, []);
+
+  // --- HIDE NAVBAR SCROLL EFFECT FOR TIMELINE AND DOWNLOAD SECTIONS ---
+  const [hideNavbar, setHideNavbar] = useState(false);
+
+  useEffect(() => {
+    const checkNavbarVisibility = () => {
+      const journey = journeySectionRef.current;
+      const download = downloadSectionRef.current;
+      let shouldHide = false;
+
+      if (journey) {
+        const rect = journey.getBoundingClientRect();
+        if (rect.top <= 60 && rect.bottom >= 0) {
+          shouldHide = true;
+        }
+      }
+
+      if (download) {
+        const rect = download.getBoundingClientRect();
+        if (rect.top <= 60 && rect.bottom >= 0) {
+          shouldHide = true;
+        }
+      }
+
+      setHideNavbar(shouldHide);
+    };
+
+    window.addEventListener("scroll", checkNavbarVisibility, { passive: true });
+    window.addEventListener("resize", checkNavbarVisibility);
+    checkNavbarVisibility();
+
+    return () => {
+      window.removeEventListener("scroll", checkNavbarVisibility);
+      window.removeEventListener("resize", checkNavbarVisibility);
+    };
+  }, []);
+
   // Sync scroll top on index update (e.g. from reset)
   useEffect(() => {
     if (scrollContainerRef.current && heroState === 'map') {
@@ -1065,7 +1247,7 @@ export default function Home() {
       {/* 1. HEADER / NAVIGATION */}
       <div className="sticky top-0 z-50 w-full pointer-events-none">
         <div className="max-w-7xl mx-auto px-6 pt-4">
-          <header className="pointer-events-auto w-full bg-white/60 backdrop-blur-md border border-white/40 rounded-full shadow-lg transition-all duration-300">
+          <header className={`pointer-events-auto w-full bg-white/60 backdrop-blur-md border border-white/40 rounded-full shadow-lg transition-all duration-300 ${hideNavbar ? 'opacity-0 -translate-y-24 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
             <div className="px-6 md:px-8 h-16 flex items-center justify-between">
               {/* Logo Brand */}
               <button
@@ -1105,12 +1287,18 @@ export default function Home() {
               </nav>
 
               {/* Right CTA */}
-              <div className="hidden md:flex items-center gap-4">
+              <div className="hidden md:flex items-center gap-3">
+                <button
+                  onClick={() => scrollToId("download")}
+                  className="px-5 py-2 border border-primary-700/50 hover:border-primary-700 hover:bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
+                >
+                  Télécharger l'app
+                </button>
                 <button
                   onClick={() => window.location.href = "/signup"}
-                  className="px-5 py-2 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
+                  className="px-5 py-2 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
                 >
-                  Créer un compte
+                  Inscrivez-vous gratuitement
                 </button>
               </div>
 
@@ -1155,9 +1343,9 @@ export default function Home() {
                 <hr className="border-neutral-200/60" />
                 <button
                   onClick={() => window.location.href = "/signup"}
-                  className="w-full text-center py-4 bg-primary-900 hover:bg-primary-950 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
+                  className="w-full text-center py-4 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
                 >
-                  Créer un compte
+                  Inscrivez-vous gratuitement
                 </button>
               </div>
             )}
@@ -1288,7 +1476,7 @@ export default function Home() {
                               <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-white ${
                                 hike.difficulty === 'Facile' ? 'bg-primary-500' :
                                 hike.difficulty === 'Modéré' ? 'bg-primary-700' :
-                                'bg-red-600'
+                                'bg-primary-950'
                               }`}>
                                 {hike.difficulty}
                               </span>
@@ -1297,7 +1485,7 @@ export default function Home() {
                                   ↗ {hike.elevation}
                                 </span>
                               )}
-                              <span className="bg-blue-600/70 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1">
+                              <span className="bg-primary-700/80 backdrop-blur-sm text-white px-2.5 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1">
                                 <span>🚆</span>
                                 <span>{hike.trainTime} (TER)</span>
                               </span>
@@ -1351,7 +1539,7 @@ export default function Home() {
                             }}
                             className="w-full py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 shadow-md text-center cursor-pointer focus:outline-none"
                           >
-                            Créer mon compte — C'est gratuit
+                            Réserver mon train
                           </button>
                         </div>
                       );
@@ -1539,7 +1727,7 @@ export default function Home() {
               onClick={() => window.location.href = "/signup"}
               className="inline-flex items-center justify-center bg-primary-900 hover:bg-primary-950 text-white text-xs font-bold uppercase tracking-widest px-8 py-3 rounded-full transition-all duration-300 mt-4 shadow-sm cursor-pointer"
             >
-              Créer mon compte gratuit
+              Inscrivez-vous gratuitement
             </button>
           </div>
 
@@ -1739,8 +1927,14 @@ export default function Home() {
         <div className="sticky top-0 h-screen w-full flex flex-col justify-center overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 w-full flex flex-col justify-center py-16">
             
-            {/* Header */}
-            <div className="text-center max-w-3xl mx-auto space-y-4 shrink-0 mb-20">
+            {/* Header (collapses and fades out once step 1 is passed to center step content) */}
+            <div 
+              className={`text-center max-w-3xl mx-auto space-y-4 shrink-0 transition-all duration-700 ease-in-out ${
+                activeStep === 1 
+                  ? 'opacity-100 scale-100 max-h-[300px] mb-20' 
+                  : 'opacity-0 scale-95 max-h-0 mb-0 pointer-events-none overflow-hidden'
+              }`}
+            >
               <span className="text-xs font-black uppercase tracking-widest text-primary-700">
                 Comment ça marche
               </span>
@@ -1763,8 +1957,20 @@ export default function Home() {
               {/* Center Column: Timeline Line & Circle */}
               <div className="col-span-2 relative flex flex-col items-center justify-start pt-8 h-[300px]">
                 
-                {/* Line above Circle (Faded) */}
-                <div className="w-[2px] h-14 border-l-2 border-dashed border-neutral-400 opacity-20 shrink-0" />
+                {/* Spacer to keep the circle in position */}
+                <div className="h-14 shrink-0" />
+
+                {/* Line above Circle (Faded and short on Step 1, normal and full height to the top on Steps 2-4) */}
+                <div 
+                  className={`absolute w-[1.5px] transition-all duration-700 ${
+                    activeStep === 1 
+                      ? 'top-[32px] h-14 opacity-20' 
+                      : 'top-[-50vh] bottom-[212px] opacity-100'
+                  }`} 
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(to bottom, #a3a3a3 0px, #a3a3a3 16px, transparent 16px, transparent 32px)'
+                  }}
+                />
 
                 {/* Single active number circle */}
                 <div className="relative w-14 h-14 shrink-0 flex items-center justify-center">
@@ -1785,8 +1991,15 @@ export default function Home() {
                   })}
                 </div>
 
-                {/* Line below Circle (Going all the way to the bottom of the screen) */}
-                <div className="absolute top-[140px] bottom-[-50vh] w-[2px] border-l-2 border-dashed border-neutral-400 opacity-100" />
+                {/* Line below Circle (Normal on Steps 1-3, hidden/opacity-0 on Step 4) */}
+                <div 
+                  className={`absolute top-[140px] bottom-[-50vh] w-[1.5px] transition-all duration-500 ${
+                    activeStep === 4 ? 'opacity-0 pointer-events-none' : 'opacity-100'
+                  }`} 
+                  style={{
+                    backgroundImage: 'repeating-linear-gradient(to bottom, #a3a3a3 0px, #a3a3a3 16px, transparent 16px, transparent 32px)'
+                  }}
+                />
               </div>
 
               {/* Right Column: Stacked Text Steps */}
@@ -2132,6 +2345,396 @@ export default function Home() {
         </div>
       </section>
 
+      {/* [NEW SECTION] 5.0.1 INTERACTIVE APP DOWNLOAD SECTION (Duolingo style) */}
+      <section ref={downloadSectionRef} id="download" className="py-24 bg-primary-50 border-b border-neutral-200 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 text-center flex flex-col items-center">
+          
+          {/* Header (Centered) */}
+          <div className="max-w-3xl mx-auto space-y-4 mb-12">
+            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-primary-950 leading-[1.1]">
+              Randonnez où vous voulez, <br />
+              <span className="text-primary-700">quand vous voulez.</span>
+            </h2>
+
+            {/* Badges & CTA */}
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+              <button
+                type="button"
+                onClick={() => alert("L'application iOS sera disponible très bientôt sur l'App Store ! Nous vous enverrons un e-mail dès sa sortie.")}
+                className="inline-flex items-center gap-3 bg-white hover:bg-neutral-50 text-neutral-900 px-5 py-2 rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-neutral-200"
+              >
+                <AppleStoreIcon className="w-5 h-5 fill-current text-black" />
+                <div className="text-left">
+                  <p className="text-[8px] uppercase tracking-wider text-neutral-500 font-semibold leading-none">Télécharger dans l'</p>
+                  <p className="text-[11px] font-bold text-neutral-800 leading-tight mt-0.5">App Store</p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => alert("L'application Android sera disponible très bientôt sur le Google Play Store ! Nous vous enverrons un e-mail dès sa sortie.")}
+                className="inline-flex items-center gap-3 bg-white hover:bg-neutral-50 text-neutral-900 px-5 py-2 rounded-xl shadow-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer border border-neutral-200"
+              >
+                <PlayStoreIcon className="w-5 h-5 text-black" />
+                <div className="text-left">
+                  <p className="text-[8px] uppercase tracking-wider text-neutral-500 font-semibold leading-none">Disponible sur</p>
+                  <p className="text-[11px] font-bold text-neutral-800 leading-tight mt-0.5">Google Play</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Animation Showcase Container */}
+          <div className="w-full max-w-5xl h-[480px] md:h-[540px] relative mt-12 overflow-visible select-none">
+            
+            {/* Background elements */}
+            <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+              <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-primary-100/20 rounded-full blur-3xl" />
+            </div>
+
+            {/* 3D Floating decorations with Parallax Scroll (Primary / Neutral palette only) */}
+            <FloatingBadge3D 
+              emoji="🧭" 
+              bgColor="bg-primary-600" 
+              borderColor="border-primary-800 text-white" 
+              className="left-[2%] md:left-[8%] top-[25%]" 
+              floatSpeed="slow"
+              style={{ transform: `translateY(${downloadProgress * -60}px) rotate(15deg)` }}
+            />
+            <FloatingBadge3D 
+              emoji="🎫" 
+              bgColor="bg-primary-400" 
+              borderColor="border-primary-600 text-white" 
+              className="left-[18%] md:left-[28%] top-[70%]" 
+              floatSpeed="medium"
+              style={{ transform: `translateY(${downloadProgress * 40}px) rotate(-10deg)` }}
+            />
+            <FloatingBadge3D 
+              emoji="🔥" 
+              bgColor="bg-primary-700" 
+              borderColor="border-primary-900 text-white" 
+              className="left-[28%] md:left-[38%] top-[18%]" 
+              floatSpeed="fast"
+              style={{ transform: `translateY(${downloadProgress * -30}px) rotate(-15deg)` }}
+            />
+            <FloatingBadge3D 
+              emoji="🌲" 
+              bgColor="bg-primary-50" 
+              borderColor="border-primary-200 text-primary-700" 
+              className="right-[28%] md:right-[38%] top-[75%]" 
+              floatSpeed="slow"
+              style={{ transform: `translateY(${downloadProgress * 50}px) rotate(8deg)` }}
+            />
+            <FloatingBadge3D 
+              emoji="👑" 
+              bgColor="bg-primary-800" 
+              borderColor="border-primary-950 text-white" 
+              className="right-[18%] md:right-[28%] top-[20%]" 
+              floatSpeed="medium"
+              style={{ transform: `translateY(${downloadProgress * -40}px) rotate(12deg)` }}
+            />
+            <FloatingBadge3D 
+              emoji="🥾" 
+              bgColor="bg-primary-300" 
+              borderColor="border-primary-500 text-white" 
+              className="right-[2%] md:right-[8%] top-[65%]" 
+              floatSpeed="fast"
+              style={{ transform: `translateY(${downloadProgress * 30}px) rotate(-12deg)` }}
+            />
+
+            {/* Phone 1 Container (Left - Pass Navigo enters) */}
+            <div className="absolute left-[5%] md:left-[15%] top-[45%] -translate-y-1/2 scale-[0.9] md:scale-100 z-10 flex flex-col items-center">
+              <div className="animate-float-slow flex flex-col items-center">
+                <div className="w-[145px] h-[280px] md:w-[170px] h-[330px] relative -rotate-12">
+                  <img 
+                    src="/tel.png" 
+                    className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none drop-shadow-2xl" 
+                    alt="Téléphone 1" 
+                  />
+                  <div className="absolute inset-[4.5%] rounded-[24px] overflow-hidden bg-[#EEF7F2] z-10 border border-neutral-200/50 flex flex-col items-center justify-between p-3">
+                    <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(#000000 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
+                    <span className="text-[7px] font-black text-primary-700/60 tracking-widest uppercase mt-4 relative z-20">1. PASS NAVIGO</span>
+                    <div className="w-full bg-primary-950/5 rounded-lg p-1.5 space-y-1 relative z-20 mb-2 text-center flex flex-col items-center">
+                      <div className="w-3/4 h-1.5 bg-primary-950/15 rounded mb-1" />
+                      <div className="w-1/2 h-1 bg-primary-950/10 rounded" />
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">1. CONNECTER</span>
+              </div>
+            </div>
+
+            {/* Pass Navigo scroll-animated element */}
+            {(() => {
+              const passProgress = Math.max(0, Math.min(1, downloadProgress / 0.35));
+              
+              // 0.0 to 0.7: Fly in from left (-350px) to center (0px)
+              // 0.7 to 1.0: Go inside the phone (scale down, translate down, fade out)
+              let x = 0;
+              let y = 0;
+              let scale = 1;
+              let opacity = 0;
+              let rotation = -12;
+              
+              if (passProgress < 0.7) {
+                const t = passProgress / 0.7; // 0 to 1
+                x = (t - 1) * 350; // starts at -350px, ends at 0px
+                y = Math.sin(t * Math.PI) * -45; // arc path
+                scale = 0.5 + t * 0.4; // starts at 0.5, ends at 0.9
+                opacity = Math.min(1, t * 3.3); // fades in quickly
+                rotation = -40 + t * 28; // rotates to -12deg
+              } else {
+                const t = (passProgress - 0.7) / 0.3; // 0 to 1
+                x = 0;
+                y = t * 25; // slides down into phone
+                scale = 0.9 - t * 0.6; // shrinks to 0.3
+                opacity = 1 - t; // fades out
+                rotation = -12;
+              }
+              
+              return (
+                <div 
+                  className="absolute left-[5%] md:left-[15%] top-[45%] -translate-y-1/2 pointer-events-none z-30 flex items-center justify-center"
+                  style={{
+                    transform: `translate(${x}px, ${y}px) scale(${scale}) rotate(${rotation}deg)`,
+                    opacity: opacity,
+                    width: '145px',
+                    height: '280px',
+                    left: 'calc(15% + 12px)'
+                  }}
+                >
+                  <div className="animate-float-slow">
+                    <img 
+                      src="/pass.png" 
+                      className="w-16 h-24 md:w-20 md:h-28 object-contain drop-shadow-xl" 
+                      alt="Pass Navigo" 
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Phone 2 & Train Showcase (Center) */}
+            <div className="absolute left-[50%] -translate-x-1/2 top-[55%] -translate-y-1/2 scale-[0.95] md:scale-105 z-20 flex flex-col items-center">
+              {(() => {
+                const trainProgress = Math.max(0, Math.min(1, (downloadProgress - 0.30) / 0.35));
+                
+                // Phone 2 animation (morph out)
+                let phoneScale = 1;
+                let phoneOpacity = 1;
+                let phoneRotate = 6;
+                let phoneY = 0;
+                
+                if (trainProgress < 0.55) {
+                  const t = trainProgress / 0.55; // 0 to 1
+                  phoneScale = 1 - t;
+                  phoneOpacity = 1 - t;
+                  phoneRotate = 6 - t * 36; // 6deg to -30deg
+                  phoneY = t * 40;
+                } else {
+                  phoneScale = 0;
+                  phoneOpacity = 0;
+                  phoneRotate = -30;
+                  phoneY = 40;
+                }
+                
+                // Train animation (morph in and slide)
+                let trainScale = 0;
+                let trainOpacity = 0;
+                let trainRotate = 30;
+                let trainX = 0;
+                let trainY = 0;
+                
+                if (trainProgress > 0 && trainProgress < 0.55) {
+                  const t = trainProgress / 0.55; // 0 to 1
+                  trainScale = t * 1.2;
+                  trainOpacity = t;
+                  trainRotate = 30 - t * 35; // 30deg to -5deg
+                  trainX = 0;
+                  trainY = 0;
+                } else if (trainProgress >= 0.55) {
+                  const t = (trainProgress - 0.55) / 0.45; // 0 to 1
+                  trainScale = 1.2 - t * 0.2; // settles back to 1.0
+                  trainOpacity = 1;
+                  trainRotate = -5 + t * 5; // settles to 0deg
+                  trainX = t * 30; // glides forward
+                  trainY = t * -30;
+                }
+                
+                return (
+                  <div className="relative w-[145px] h-[280px] md:w-[170px] h-[330px] flex items-center justify-center">
+                    {/* Phone 2 Visual */}
+                    {phoneOpacity > 0 && (
+                      <div 
+                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75"
+                        style={{
+                          transform: `translateY(${phoneY}px) scale(${phoneScale}) rotate(${phoneRotate}deg)`,
+                          opacity: phoneOpacity
+                        }}
+                      >
+                        <div className="animate-float-medium w-full h-full relative">
+                          <img 
+                            src="/tel.png" 
+                            className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none drop-shadow-2xl" 
+                            alt="Téléphone 2" 
+                          />
+                          <div className="absolute inset-[4.5%] rounded-[24px] overflow-hidden bg-[#EEF7F2] z-10 border border-neutral-200/50 flex flex-col items-center justify-between p-3">
+                            <div className="absolute bottom-0 inset-x-0 h-16 bg-primary-700/10 rounded-t-full opacity-60" />
+                            <span className="text-[7px] font-black text-primary-700/60 tracking-widest uppercase mt-4 relative z-20">2. RÉSERVATION</span>
+                            <div className="w-full bg-primary-950/5 rounded-lg p-1.5 space-y-1 relative z-20 mb-2">
+                              <div className="w-2/3 h-1 bg-primary-950/15 rounded" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Train Visual */}
+                    {trainOpacity > 0 && (
+                      <div 
+                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75 animate-float-medium"
+                        style={{
+                          transform: `translate(${trainX}px, ${trainY}px) scale(${trainScale}) rotate(${trainRotate}deg)`,
+                          opacity: trainOpacity
+                        }}
+                      >
+                        <div className="flex flex-col items-center">
+                          <img 
+                            src="/train.png" 
+                            className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl" 
+                            alt="Train" 
+                          />
+                          <span className="text-[10px] font-bold text-primary-900 uppercase tracking-widest mt-2 bg-primary-100/90 px-3 py-1 rounded-full border border-primary-200 shadow-sm">
+                            Le Train 🚄
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">2. DÉCOLLER</span>
+            </div>
+
+            {/* Phone 3 & Hiker Showcase (Right) */}
+            <div className="absolute right-[5%] md:right-[15%] top-[45%] -translate-y-1/2 scale-[0.9] md:scale-100 z-10 flex flex-col items-center">
+              {(() => {
+                const hikerProgress = Math.max(0, Math.min(1, (downloadProgress - 0.60) / 0.35));
+                
+                // Phone 3 animation (morph out)
+                let phoneScale = 1;
+                let phoneOpacity = 1;
+                let phoneRotate = -6;
+                let phoneY = 0;
+                
+                if (hikerProgress < 0.55) {
+                  const t = hikerProgress / 0.55; // 0 to 1
+                  phoneScale = 1 - t;
+                  phoneOpacity = 1 - t;
+                  phoneRotate = -6 + t * 36; // -6deg to 30deg
+                  phoneY = t * 40;
+                } else {
+                  phoneScale = 0;
+                  phoneOpacity = 0;
+                  phoneRotate = 30;
+                  phoneY = 40;
+                }
+                
+                // Hiker animation (morph in and slide)
+                let hikerScale = 0;
+                let hikerOpacity = 0;
+                let hikerRotate = -30;
+                let hikerX = 0;
+                let hikerY = 0;
+                
+                if (hikerProgress > 0 && hikerProgress < 0.55) {
+                  const t = hikerProgress / 0.55; // 0 to 1
+                  hikerScale = t * 1.2;
+                  hikerOpacity = t;
+                  hikerRotate = -30 + t * 35; // -30deg to 5deg
+                  hikerX = 0;
+                  hikerY = 0;
+                } else if (hikerProgress >= 0.55) {
+                  const t = (hikerProgress - 0.55) / 0.45; // 0 to 1
+                  hikerScale = 1.2 - t * 0.2; // settles to 1.0
+                  hikerOpacity = 1;
+                  hikerRotate = 5 - t * 5; // settles to 0deg
+                  hikerX = t * 30; // glides forward
+                  hikerY = t * -30;
+                }
+                
+                const bubbleScale = hikerProgress > 0.75 ? Math.min(1, (hikerProgress - 0.75) / 0.2) : 0;
+                
+                return (
+                  <div className="relative w-[145px] h-[280px] md:w-[170px] h-[330px] flex items-center justify-center">
+                    {/* Phone 3 Visual */}
+                    {phoneOpacity > 0 && (
+                      <div 
+                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75"
+                        style={{
+                          transform: `translateY(${phoneY}px) scale(${phoneScale}) rotate(${phoneRotate}deg)`,
+                          opacity: phoneOpacity
+                        }}
+                      >
+                        <div className="animate-float-fast w-full h-full relative">
+                          <img 
+                            src="/tel.png" 
+                            className="absolute inset-0 w-full h-full object-contain z-20 pointer-events-none drop-shadow-2xl" 
+                            alt="Téléphone 3" 
+                          />
+                          <div className="absolute inset-[4.5%] rounded-[24px] overflow-hidden bg-[#EEF7F2] z-10 border border-neutral-200/50 flex flex-col items-center justify-between p-3">
+                            <span className="text-[7px] font-black text-primary-700/60 tracking-widest uppercase mt-4 relative z-20">3. AVENTURE</span>
+                            <div className="w-full bg-primary-950/5 rounded-lg p-1.5 space-y-1 relative z-20 mb-2">
+                              <div className="w-1/2 h-1 bg-primary-950/15 rounded" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Hiker Visual */}
+                    {hikerOpacity > 0 && (
+                      <div 
+                        className="absolute inset-0 flex flex-col items-center justify-center transition-all duration-75 animate-float-fast"
+                        style={{
+                          transform: `translate(${hikerX}px, ${hikerY}px) scale(${hikerScale}) rotate(${hikerRotate}deg)`,
+                          opacity: hikerOpacity
+                        }}
+                      >
+                        <div className="flex flex-col items-center relative">
+                          <img 
+                            src="/randonneur.png" 
+                            className="w-24 h-24 md:w-32 md:h-32 object-contain drop-shadow-2xl" 
+                            alt="Randonneur" 
+                          />
+                          
+                          {/* Speech bubble "C'est parti !" */}
+                          <div 
+                            className="absolute -top-10 -right-16 bg-white border-2 border-primary-700 rounded-2xl px-3 py-1.5 text-[10px] font-black text-primary-900 shadow-lg uppercase tracking-wider transition-all duration-300 z-40"
+                            style={{
+                              transform: `scale(${bubbleScale})`,
+                              transformOrigin: 'bottom left'
+                            }}
+                          >
+                            C'est parti ! 🌲
+                          </div>
+                          
+                          <span className="text-[10px] font-bold text-primary-900 uppercase tracking-widest mt-2 bg-primary-100/90 px-3 py-1 rounded-full border border-primary-200 shadow-sm">
+                            Le Randonneur 🥾
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">3. CRAPAHUTER</span>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
       {/* 5.1 FAQ SECTION (Inspired by screenshot) */}
       <section id="faq" className="bg-neutral-50 py-24 md:py-32 border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-6">
@@ -2310,9 +2913,9 @@ export default function Home() {
               onClick={() => {
                 window.location.href = "/signup";
               }}
-              className="bg-white hover:bg-neutral-100 text-neutral-950 font-bold text-xs tracking-widest uppercase py-4 px-10 rounded-full transition-all duration-300 shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-98 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
+              className="bg-primary-50 hover:bg-primary-100 text-primary-900 font-bold text-xs tracking-widest uppercase py-4 px-10 rounded-full transition-all duration-300 shadow-xl shadow-black/20 hover:scale-[1.02] active:scale-98 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2"
             >
-              Créer mon compte
+              Inscrivez-vous gratuitement
             </button>
 
             <span
@@ -2423,7 +3026,7 @@ export default function Home() {
                     INSCRIPTION GRATUITE
                   </span>
                   <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight text-neutral-900 mt-1">
-                    Créer mon compte Névé
+                    Inscrivez-vous gratuitement
                   </h3>
                   <p className="text-xs text-neutral-600 mt-2 font-normal leading-relaxed">
                     30 secondes pour accéder à tous les sentiers, réserver tes billets et randonner l'esprit léger.
@@ -2529,7 +3132,7 @@ export default function Home() {
                     type="submit"
                     className="w-full py-3.5 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-md shadow-primary-950/20 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 mt-4 hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    Créer mon compte gratuit
+                    Inscrivez-vous gratuitement
                   </button>
                 </form>
               </>
@@ -2557,14 +3160,14 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={() => setBookDownloadMsg("L'application iOS sera disponible très bientôt sur l'App Store ! Nous vous enverrons un e-mail dès sa sortie.")}
-                    className="w-full py-3.5 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    className="w-full py-3.5 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <span>Télécharger sur l'App Store</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setBookDownloadMsg("L'application Android sera disponible très bientôt sur le Google Play Store ! Nous vous enverrons un e-mail dès sa sortie.")}
-                    className="w-full py-3.5 bg-white border border-neutral-200/80 hover:bg-neutral-50 text-neutral-800 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    className="w-full py-3.5 bg-white border border-primary-200 hover:bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                   >
                     <span>Télécharger sur Google Play</span>
                   </button>

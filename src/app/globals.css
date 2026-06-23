@@ -82,4 +82,24 @@ body {
   }
 }
 
+@keyframes floatAnimation {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@utility animate-float-slow {
+  animation: floatAnimation 6s ease-in-out infinite;
+}
+
+@utility animate-float-medium {
+  animation: floatAnimation 5s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+@utility animate-float-fast {
+  animation: floatAnimation 4s ease-in-out infinite;
+  animation-delay: 3s;
+}
+
+
 

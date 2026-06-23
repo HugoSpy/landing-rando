@@ -101,7 +101,7 @@ export default function SignupPage() {
                   REJOINDRE NÉVÉ
                 </span>
                 <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-neutral-900 mt-1 leading-tight">
-                  Créer un compte
+                  Inscrivez-vous gratuitement
                 </h1>
                 <p className="text-xs text-neutral-600 mt-2 font-normal">
                   Accédez à tous nos itinéraires et préparez vos micro-aventures sans voiture.
@@ -207,7 +207,7 @@ export default function SignupPage() {
                   type="submit"
                   className="w-full py-3.5 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-md shadow-primary-950/20 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 mt-4 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Créer mon compte
+                  Inscrivez-vous gratuitement
                 </button>
               </form>
 
@@ -243,13 +243,13 @@ export default function SignupPage() {
               <div className="space-y-3 pt-2">
                 <button
                   onClick={() => setDownloadMsg("L'application iOS sera disponible très bientôt sur l'App Store ! Nous vous enverrons un e-mail dès sa sortie.")}
-                  className="w-full py-3.5 bg-neutral-950 hover:bg-neutral-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-3.5 bg-primary-700 hover:bg-primary-800 text-white text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>Télécharger sur l'App Store</span>
                 </button>
                 <button
                   onClick={() => setDownloadMsg("L'application Android sera disponible très bientôt sur le Google Play Store ! Nous vous enverrons un e-mail dès sa sortie.")}
-                  className="w-full py-3.5 bg-white border border-neutral-200/80 hover:bg-neutral-50 text-neutral-800 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-3.5 bg-white border border-primary-200 hover:bg-primary-50 text-primary-700 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-sm flex items-center justify-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-700 focus-visible:ring-offset-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                 >
                   <span>Télécharger sur Google Play</span>
                 </button>
