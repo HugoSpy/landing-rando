@@ -375,13 +375,13 @@ const PHONE_ASPECT = 846 / 1124;
 type PhoneRect = { cx: number; cy: number; left: number; top: number; w: number; h: number };
 
 // Un asset = 2 copies pilotées par les MÊMES MotionValues :
-//  - "volante" : derrière les phones (z-5). Visible hors silhouette du phone.
-//  - "portal"  : devant la dalle (z-20), clippée à SCREEN_CLIP. Visible "dans" l'écran.
+//  - "volante" : derrière les phones (z-10). Visible hors silhouette du phone.
+//  - "portal"  : devant la dalle (z-30), clippée à SCREEN_CLIP. Visible "dans" l'écran.
 // La dalle opaque + le z-index produisent le crop en continu (aucun switch -> aucun saut).
 // Le float idle (bob) est ajouté de façon synchrone : le portal bouge avec son phone
 // (outer y=bob), la volante interpole src->dest pour matcher au franchissement du cadre.
 function ActAsset({
-  src, imgClass, x, y, s, r, o, srcRect, destRect, srcBob, destBob, actProgress,
+  src, imgClass, x, y, s, r, oSrc, oFly, oDest, srcRect, destRect, srcBob, destBob, actProgress,
 }: {
   src: string;
   imgClass: string;
@@ -389,7 +389,9 @@ function ActAsset({
   y: MotionValue<number>;
   s: MotionValue<number>;
   r: MotionValue<number>;
-  o: MotionValue<number>;
+  oSrc: MotionValue<number>;
+  oFly: MotionValue<number>;
+  oDest?: MotionValue<number>;
   srcRect: PhoneRect;
   destRect?: PhoneRect | null;
   srcBob: MotionValue<number>;
@@ -409,14 +411,14 @@ function ActAsset({
   return (
     <>
       {/* Copie volante (derrière les phones) */}
-      <motion.div className="absolute top-0 left-0 z-[5] pointer-events-none" style={{ x, y: flyY, scale: s, rotate: r, opacity: o }}>
+      <motion.div className="absolute top-0 left-0 z-10 pointer-events-none" style={{ x, y: flyY, scale: s, rotate: r, opacity: oFly }}>
         <img src={src} alt="" className={`${imgClass} -translate-x-1/2 -translate-y-1/2`} />
       </motion.div>
 
       {/* Portal source (devant la dalle, clippé) */}
       <motion.div
-        className="absolute z-20 pointer-events-none overflow-hidden"
-        style={{ left: srcRect.left, top: srcRect.top, width: srcRect.w, height: srcRect.h, y: srcBob, clipPath: SCREEN_CLIP, opacity: o }}
+        className="absolute z-30 pointer-events-none overflow-hidden"
+        style={{ left: srcRect.left, top: srcRect.top, width: srcRect.w, height: srcRect.h, y: srcBob, clipPath: SCREEN_CLIP, opacity: oSrc }}
       >
         <motion.div className="absolute top-0 left-0" style={{ x: sx, y: sy, scale: s, rotate: r }}>
           <img src={src} alt="" className={`${imgClass} -translate-x-1/2 -translate-y-1/2`} />
@@ -426,8 +428,8 @@ function ActAsset({
       {/* Portal destination (absent pour le train : acte 3 = émerge + voyage, pas de plonge) */}
       {destRect && (
         <motion.div
-          className="absolute z-20 pointer-events-none overflow-hidden"
-          style={{ left: destRect.left, top: destRect.top, width: destRect.w, height: destRect.h, y: destBob, clipPath: SCREEN_CLIP, opacity: o }}
+          className="absolute z-30 pointer-events-none overflow-hidden"
+          style={{ left: destRect.left, top: destRect.top, width: destRect.w, height: destRect.h, y: destBob, clipPath: SCREEN_CLIP, opacity: oDest }}
         >
           <motion.div className="absolute top-0 left-0" style={{ x: dx, y: dy, scale: s, rotate: r }}>
             <img src={src} alt="" className={`${imgClass} -translate-x-1/2 -translate-y-1/2`} />
@@ -1139,21 +1141,26 @@ export default function Home() {
   const trProg = useTransform(scrollYProgress, [0.66, 1], [0, 1]);
 
   // Act 1 — city_pass : émerge de P0, voyage, plonge dans P1
-  const cpO = useTransform(scrollYProgress, [0, 0.02, 0.30, 0.33], [0, 1, 1, 0]);
+  const cpOSrc = useTransform(scrollYProgress, [0, 0.02, 0.08, 0.11], [0, 1, 1, 0]);
+  const cpOFly = useTransform(scrollYProgress, [0.07, 0.11, 0.24, 0.28], [0, 1, 1, 0]);
+  const cpODest = useTransform(scrollYProgress, [0.26, 0.30, 0.325, 0.33], [0, 1, 1, 0]);
   const cpS = useTransform(scrollYProgress, [0, 0.165, 0.33], [0.7, 1.1, 0.7]);
   const cpR = useTransform(scrollYProgress, [0, 0.33], [-12, 12]);
   const cpX = useTransform(scrollYProgress, [0, 0.165, 0.33], isVertical ? [P0.x, (P0.x + P1.x) / 2 - arc, P1.x] : [P0.x, (P0.x + P1.x) / 2, P1.x]);
   const cpY = useTransform(scrollYProgress, [0, 0.165, 0.33], isVertical ? [P0.y, (P0.y + P1.y) / 2, P1.y] : [P0.y, (P0.y + P1.y) / 2 - arc, P1.y]);
 
   // Act 2 — hiker : émerge de P1, voyage, plonge dans P2 (démarre quand city_pass a fini)
-  const hkO = useTransform(scrollYProgress, [0.33, 0.35, 0.63, 0.66], [0, 1, 1, 0]);
+  const hkOSrc = useTransform(scrollYProgress, [0.33, 0.35, 0.41, 0.44], [0, 1, 1, 0]);
+  const hkOFly = useTransform(scrollYProgress, [0.40, 0.44, 0.57, 0.61], [0, 1, 1, 0]);
+  const hkODest = useTransform(scrollYProgress, [0.59, 0.63, 0.655, 0.66], [0, 1, 1, 0]);
   const hkS = useTransform(scrollYProgress, [0.33, 0.495, 0.66], [0.7, 1.1, 0.7]);
   const hkR = useTransform(scrollYProgress, [0.33, 0.66], [-12, 12]);
   const hkX = useTransform(scrollYProgress, [0.33, 0.495, 0.66], isVertical ? [P1.x, (P1.x + P2.x) / 2 - arc, P2.x] : [P1.x, (P1.x + P2.x) / 2, P2.x]);
   const hkY = useTransform(scrollYProgress, [0.33, 0.495, 0.66], isVertical ? [P1.y, (P1.y + P2.y) / 2, P2.y] : [P1.y, (P1.y + P2.y) / 2 - arc, P2.y]);
 
   // Act 3 — train : émerge de P2, voyage et s'arrête à droite (pas de plonge, reste visible)
-  const trO = useTransform(scrollYProgress, [0.66, 0.68, 1], [0, 1, 1]);
+  const trOSrc = useTransform(scrollYProgress, [0.66, 0.68, 0.74, 0.77], [0, 1, 1, 0]);
+  const trOFly = useTransform(scrollYProgress, [0.73, 0.78, 1], [0, 1, 1]);
   const trS = useTransform(scrollYProgress, [0.66, 0.83, 1], [0.7, 1.05, 1]);
   const trR = useTransform(scrollYProgress, [0.66, 1], [10, 0]);
   const trX = useTransform(scrollYProgress, [0.66, 1], [P2.x, trainEndX]);
@@ -2593,17 +2600,17 @@ export default function Home() {
             />
 
             {/* 3 phones — même Y de base (top-1/2), float idle en MotionValue (bob) */}
-            <div ref={phoneRef0} className="absolute left-[5%] md:left-[15%] top-1/2 -translate-y-1/2 scale-[0.9] md:scale-100 z-10">
+            <div ref={phoneRef0} className="absolute left-[5%] md:left-[15%] top-1/2 -translate-y-1/2 scale-[0.9] md:scale-100 z-20">
               <motion.div style={{ y: bob0 }} className="w-[150px] h-[300px] md:w-[170px] md:h-[330px] relative">
                 <img src="/phone.webp" className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none" alt="Application Névé" />
               </motion.div>
             </div>
-            <div ref={phoneRef1} className="absolute left-[50%] -translate-x-1/2 top-1/2 -translate-y-1/2 scale-[0.95] md:scale-105 z-10">
+            <div ref={phoneRef1} className="absolute left-[50%] -translate-x-1/2 top-1/2 -translate-y-1/2 scale-[0.95] md:scale-105 z-20">
               <motion.div style={{ y: bob1 }} className="w-[150px] h-[300px] md:w-[170px] md:h-[330px] relative">
                 <img src="/phone.webp" className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none" alt="Application Névé" />
               </motion.div>
             </div>
-            <div ref={phoneRef2} className="absolute right-[5%] md:right-[15%] top-1/2 -translate-y-1/2 scale-[0.9] md:scale-100 z-10">
+            <div ref={phoneRef2} className="absolute right-[5%] md:right-[15%] top-1/2 -translate-y-1/2 scale-[0.9] md:scale-100 z-20">
               <motion.div style={{ y: bob2 }} className="w-[150px] h-[300px] md:w-[170px] md:h-[330px] relative">
                 <img src="/phone.webp" className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl pointer-events-none" alt="Application Névé" />
               </motion.div>
@@ -2613,13 +2620,13 @@ export default function Home() {
             {!reduceActive && measured && (
               <>
                 <ActAsset src="/city_pass.webp" imgClass="w-24 md:w-32 drop-shadow-xl"
-                  x={cpX} y={cpY} s={cpS} r={cpR} o={cpO}
+                  x={cpX} y={cpY} s={cpS} r={cpR} oSrc={cpOSrc} oFly={cpOFly} oDest={cpODest}
                   srcRect={R0} destRect={R1} srcBob={bob0} destBob={bob1} actProgress={cpProg} />
                 <ActAsset src="/hiker.webp" imgClass="w-24 md:w-32 drop-shadow-xl"
-                  x={hkX} y={hkY} s={hkS} r={hkR} o={hkO}
+                  x={hkX} y={hkY} s={hkS} r={hkR} oSrc={hkOSrc} oFly={hkOFly} oDest={hkODest}
                   srcRect={R1} destRect={R2} srcBob={bob1} destBob={bob2} actProgress={hkProg} />
                 <ActAsset src="/train.webp" imgClass="w-28 md:w-36 drop-shadow-xl"
-                  x={trX} y={trY} s={trS} r={trR} o={trO}
+                  x={trX} y={trY} s={trS} r={trR} oSrc={trOSrc} oFly={trOFly}
                   srcRect={R2} destRect={null} srcBob={bob2} destBob={zeroBob} actProgress={trProg} />
               </>
             )}
